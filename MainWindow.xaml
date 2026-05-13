@@ -1,0 +1,2208 @@
+<Window x:Class="VoiceTypingDesktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Voice Typing Desktop"
+        Icon="pack://application:,,,/Assets/app.ico"
+        Height="760" Width="980"
+        MinHeight="720" MinWidth="430"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BgBase}"
+        Foreground="{DynamicResource TextPrimary}"
+        FontFamily="Segoe UI Variable, Segoe UI"
+        AllowsTransparency="False"
+        WindowStyle="None"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SizeChanged="Window_SizeChanged">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="38"
+                            CornerRadius="0"
+                            GlassFrameThickness="0"
+                            ResizeBorderThickness="6"
+                            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Border Background="{DynamicResource BgBase}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="38" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="26" />
+            </Grid.RowDefinitions>
+
+            <!-- ============================ TITLE BAR ============================ -->
+            <Grid Grid.Row="0" Background="{DynamicResource HeaderGlow}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                            Margin="14,0,0,0" VerticalAlignment="Center">
+                    <Border Width="22" Height="22" CornerRadius="6"
+                            Background="{DynamicResource AccentGradient}">
+                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE720;" FontSize="12"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Text="Voice Typing Desktop"
+                               Margin="10,0,0,0"
+                               FontSize="12.5"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" Text="" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Quick theme toggle (cycles System → Light → Dark) -->
+                    <Button x:Name="ThemeBtn" Style="{StaticResource TitleBarButton}"
+                            Click="ThemeBtn_Click" ToolTip="Toggle theme">
+                        <TextBlock x:Name="ThemeGlyph"
+                                   FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE706;" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                    </Button>
+                    <!-- Pin (always on top) -->
+                    <Button x:Name="PinBtn" Style="{StaticResource TitleBarButton}"
+                            Click="PinBtn_Click" ToolTip="Pin on top (always on top)">
+                        <TextBlock x:Name="PinGlyph"
+                                   FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE718;" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                    </Button>
+                    <Button Style="{StaticResource TitleBarButton}"
+                            Click="MinBtn_Click" ToolTip="Minimize">
+                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE921;" FontSize="10" />
+                    </Button>
+                    <Button Style="{StaticResource TitleBarButton}"
+                            Click="MaxBtn_Click" ToolTip="Maximize">
+                        <TextBlock x:Name="MaxGlyph"
+                                   FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE922;" FontSize="10" />
+                    </Button>
+                    <Button Style="{StaticResource TitleBarCloseButton}"
+                            Click="CloseBtn_Click" ToolTip="Close">
+                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                   Text="&#xE8BB;" FontSize="10" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ============================ BODY ============================ -->
+            <Grid Grid.Row="1">
+
+                <!-- Pages live underneath; the floating drawer overlays it.
+                     The left margin clears the sidebar's footprint
+                     (8px left margin + 52px sidebar width = 60px). -->
+                <Grid Margin="60,0,0,0" Background="{DynamicResource BgBase}">
+
+                    <!-- ============================================================
+                         PAGE: MOBILE SYNC
+                         Top:    collapsible pairing card (compact header + QR detail)
+                         Bottom: history card filling the rest of the page
+                         ============================================================ -->
+                    <Grid x:Name="PageMobileSync" Margin="20,18,20,16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Page title -->
+                        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                            <TextBlock Text="Mobile Sync"
+                                       FontSize="19" FontWeight="SemiBold" />
+                            <TextBlock Text="Pair your phone and stream voice text in realtime."
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="12" Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <!-- Collapsible pairing card -->
+                        <Border Grid.Row="1" Style="{StaticResource GlowCard}"
+                                Padding="0" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Always-visible compact header (the entire row toggles expansion) -->
+                                <Button x:Name="PairingHeaderBtn"
+                                        Grid.Row="0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        Cursor="Hand"
+                                        Click="PairingHeaderBtn_Click"
+                                        HorizontalContentAlignment="Stretch">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bd" Background="Transparent" CornerRadius="12">
+                                                <ContentPresenter />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BgHover}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+
+                                    <Grid Margin="14,12,12,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Accent avatar -->
+                                        <Border Grid.Column="0"
+                                                Width="36" Height="36" CornerRadius="9"
+                                                Background="{DynamicResource AccentGradient}">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE8CE;" FontSize="16"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <!-- Pair code -->
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="PAIR CODE"
+                                                       FontSize="9.5" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock x:Name="PairCodeText"
+                                                       Text="------"
+                                                       FontSize="20" FontWeight="Bold"
+                                                       FontFamily="Consolas"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       Margin="0,1,0,0" />
+                                        </StackPanel>
+
+                                        <!-- Status pill -->
+                                        <Border Grid.Column="3"
+                                                Background="{DynamicResource BgHover}"
+                                                CornerRadius="999"
+                                                Padding="10,5"
+                                                VerticalAlignment="Center"
+                                                Margin="8,0,8,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse x:Name="SyncDot"
+                                                         Width="8" Height="8"
+                                                         Fill="{DynamicResource Warning}"
+                                                         VerticalAlignment="Center" />
+                                                <TextBlock x:Name="MobileSyncStatusText"
+                                                           Text="Starting..."
+                                                           Margin="7,0,0,0"
+                                                           FontSize="11.5"
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Chevron -->
+                                        <Border Grid.Column="4"
+                                                Width="30" Height="30" CornerRadius="8"
+                                                Background="Transparent"
+                                                VerticalAlignment="Center">
+                                            <TextBlock x:Name="PairChevron"
+                                                       FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE70E;"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                    </Grid>
+                                </Button>
+
+                                <!-- Expandable detail panel -->
+                                <Border x:Name="PairingDetail"
+                                        Grid.Row="1"
+                                        BorderBrush="{DynamicResource Border}"
+                                        BorderThickness="0,1,0,0"
+                                        Padding="16,14,16,16">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- QR code on the left -->
+                                        <Border Grid.Column="0"
+                                                Background="{DynamicResource QrCanvas}"
+                                                BorderBrush="{DynamicResource Border}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="8">
+                                            <Grid Width="160" Height="160">
+                                                <TextBlock x:Name="QrPlaceholder"
+                                                           Text="(generating...)"
+                                                           Foreground="#888"
+                                                           FontSize="11"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                                <Image x:Name="QrImage" Stretch="Uniform" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Right-side info -->
+                                        <StackPanel Grid.Column="1" Margin="16,0,0,0"
+                                                    VerticalAlignment="Center">
+
+                                            <!-- Play Store CTA — lets the user install the
+                                                 companion mobile app straight from here.
+                                                 Replace PlayStoreUrl in MainWindow.xaml.cs
+                                                 with the real store listing when published. -->
+                                            <Button Style="{StaticResource PlayStoreButton}"
+                                                    Click="OpenPlayStore_Click"
+                                                    ToolTip="Install Voice Typing on Android from the Play Store"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,0,0,14">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <!-- Official Google Play 2022 icon.
+                                                         Path data copied verbatim from the
+                                                         Wikimedia Commons public-domain SVG
+                                                         (viewBox 0 0 28.99 31.99, four
+                                                         paths, Google brand hex colours).
+                                                         https://commons.wikimedia.org/wiki/File:Google_Play_2022_icon.svg -->
+                                                    <Border Grid.Column="0"
+                                                            Width="34" Height="34"
+                                                            CornerRadius="9"
+                                                            Background="White"
+                                                            VerticalAlignment="Center">
+                                                        <Viewbox Width="20" Height="22"
+                                                                 Stretch="Uniform"
+                                                                 HorizontalAlignment="Center"
+                                                                 VerticalAlignment="Center">
+                                                            <Canvas Width="28.99" Height="31.99">
+                                                                <!-- Red face -->
+                                                                <Path Fill="#EA4335"
+                                                                      Data="M13.54 15.28 L0.12 29.34 A3.66 3.66 0 0 0 5.45 31.5 L20.55 22.9 Z" />
+                                                                <!-- Yellow face -->
+                                                                <Path Fill="#FBBC04"
+                                                                      Data="M27.11 12.89 L20.58 9.15 L13.23 15.60 L20.61 22.88 L27.09 19.18 A3.54 3.54 0 0 0 28.59 14.39 A3.62 3.62 0 0 0 27.09 12.89 Z" />
+                                                                <!-- Blue face -->
+                                                                <Path Fill="#4285F4"
+                                                                      Data="M0.12 2.66 A3.57 3.57 0 0 0 0 3.58 L0 28.42 A3.57 3.57 0 0 0 0.12 29.34 L14 15.64 Z" />
+                                                                <!-- Green face -->
+                                                                <Path Fill="#34A853"
+                                                                      Data="M13.64 16 L20.58 9.15 L5.5 0.51 A3.73 3.73 0 0 0 3.63 0 A3.64 3.64 0 0 0 0.12 2.65 Z" />
+                                                            </Canvas>
+                                                        </Viewbox>
+                                                    </Border>
+
+                                                    <StackPanel Grid.Column="1" Margin="10,0,12,0"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="GET IT ON"
+                                                                   FontSize="8.5"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="#BDB8FF" />
+                                                        <TextBlock Text="Google Play"
+                                                                   FontSize="13.5"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="White"
+                                                                   Margin="0,-1,0,0" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Button>
+
+                                            <TextBlock Text="HOW TO PAIR"
+                                                       FontSize="9.5" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Text="Open the Voice Typing app on your phone and scan this QR code, or type the pair code shown above."
+                                                       TextWrapping="Wrap" FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Margin="0,4,0,12" />
+
+                                            <TextBlock Text="DEVICE ID"
+                                                       FontSize="9.5" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock x:Name="DeviceIdText" Text="—"
+                                                       FontSize="11" TextWrapping="Wrap"
+                                                       FontFamily="Consolas"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Margin="0,2,0,10" />
+
+                                            <!-- Live diagnostic line: shows poll count + last text time -->
+                                            <TextBlock x:Name="SyncDiagText"
+                                                       Text=""
+                                                       FontSize="10.5"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,10" />
+
+                                            <!-- Re-pair button: forces a new session lookup -->
+                                            <Button x:Name="RepairButton"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="10,6"
+                                                    Click="RepairButton_Click"
+                                                    ToolTip="Forget the current session and re-pair from your phone.">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                               FontSize="11" Text="&#xE72C;"
+                                                               Margin="0,0,6,0"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Text="Re-pair" FontSize="11.5"
+                                                               VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- History card (fills remaining space) -->
+                        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="16,14,16,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="History" FontSize="14"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="All texts received from mobile, saved locally."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontSize="11" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Style="{StaticResource Badge}"
+                                            VerticalAlignment="Center">
+                                        <TextBlock x:Name="ReceivedCountText"
+                                                   Text="0 items" FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Body: the ListBox owns its own ScrollViewer. We do NOT
+                                     wrap it in an outer ScrollViewer (that breaks mouse-wheel
+                                     scrolling and item virtualization). EmptyState overlays
+                                     when the list is empty. -->
+                                <Grid Grid.Row="1" Margin="8,0,8,0">
+                                    <StackPanel x:Name="EmptyState"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Margin="0,32,0,32">
+                                        <Border Width="52" Height="52" CornerRadius="26"
+                                                Background="{DynamicResource BgHover}"
+                                                HorizontalAlignment="Center">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       FontSize="22"
+                                                       Text="&#xE8EA;"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="No texts yet" FontSize="13.5"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,10,0,2" />
+                                        <TextBlock Text="Pair your mobile and start talking."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   HorizontalAlignment="Center" FontSize="11.5" />
+                                    </StackPanel>
+
+                                    <ListBox x:Name="ReceivedTextsList"
+                                             Style="{StaticResource FlatListBox}"
+                                             ItemContainerStyle="{StaticResource FlatListBoxItem}"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             ScrollViewer.CanContentScroll="True"
+                                             VirtualizingPanel.IsVirtualizing="True"
+                                             VirtualizingPanel.VirtualizationMode="Recycling">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{DynamicResource BgElevated}"
+                                                            BorderBrush="{DynamicResource Border}"
+                                                            BorderThickness="1" CornerRadius="10"
+                                                            Padding="12,10" Margin="4,3">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0">
+                                                                <TextBlock Text="{Binding Text}"
+                                                                           TextWrapping="Wrap" FontSize="12.5" />
+                                                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                               FontSize="10" Text="&#xE823;"
+                                                                               Foreground="{DynamicResource TextMuted}"
+                                                                               Margin="0,0,4,0"
+                                                                               VerticalAlignment="Center" />
+                                                                    <TextBlock Text="{Binding CreatedAtDisplay}"
+                                                                               Foreground="{DynamicResource TextMuted}"
+                                                                               FontSize="10.5" />
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="1"
+                                                                        Orientation="Vertical"
+                                                                        Margin="10,0,0,0"
+                                                                        VerticalAlignment="Center">
+                                                                <!-- Copy to clipboard -->
+                                                                <Button Style="{StaticResource TranslatorChipButton}"
+                                                                        MinWidth="88" Height="30"
+                                                                        Padding="4,0,10,0"
+                                                                        Margin="0,0,0,6"
+                                                                        Tag="{Binding Text}"
+                                                                        Click="ItemCopyButton_Click"
+                                                                        ToolTip="Copy to clipboard">
+                                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                        <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                                                Width="20" Height="20"
+                                                                                CornerRadius="6"
+                                                                                Background="#22C55E">
+                                                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                                       Text="&#xE8C8;" FontSize="10"
+                                                                                       Foreground="White"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Center" />
+                                                                        </Border>
+                                                                        <TextBlock Text="Copy" FontSize="11" VerticalAlignment="Center" />
+                                                                    </StackPanel>
+                                                                </Button>
+
+                                                                <!-- Paste straight into the active app -->
+                                                                <Button Style="{StaticResource TranslatorChipButton}"
+                                                                        MinWidth="88" Height="30"
+                                                                        Padding="4,0,10,0"
+                                                                        Tag="{Binding Text}"
+                                                                        Click="ItemPasteButton_Click"
+                                                                        ToolTip="Paste into the last active app">
+                                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                        <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                                                Width="20" Height="20"
+                                                                                CornerRadius="6"
+                                                                                Background="#7C5CFF">
+                                                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                                       Text="&#xE77F;" FontSize="10"
+                                                                                       Foreground="White"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Center" />
+                                                                        </Border>
+                                                                        <TextBlock Text="Paste" FontSize="11" VerticalAlignment="Center" />
+                                                                    </StackPanel>
+                                                                </Button>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Grid>
+
+                                <!-- Action bar: refined buttons, right-aligned -->
+                                <Border Grid.Row="2"
+                                        BorderBrush="{DynamicResource Border}"
+                                        BorderThickness="0,1,0,0"
+                                        Padding="14,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE946;" FontSize="11"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,6,0" />
+                                            <TextBlock Text="Saved locally on this PC"
+                                                       FontSize="11"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <Button x:Name="ClearListButton"
+                                                    Style="{StaticResource TranslatorChipButton}"
+                                                    MinWidth="100"
+                                                    Margin="0,0,8,0"
+                                                    Click="ClearListButton_Click"
+                                                    ToolTip="Clear local history (does not delete from Supabase)">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                            Background="#EF4444">
+                                                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                   Text="&#xE74D;" FontSize="11"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Text="Clear" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="CopyAllButton"
+                                                    Style="{StaticResource TranslatorChipButton}"
+                                                    MinWidth="112"
+                                                    Margin="0"
+                                                    Click="CopyAllButton_Click"
+                                                    ToolTip="Copy every received message to clipboard">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                            Background="#22C55E">
+                                                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                   Text="&#xE8C8;" FontSize="11"
+                                                                   Foreground="White"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Text="Copy All" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ====================================================== PAGE: VOICE BOX (mic-centered) ====================================================== -->
+                    <Grid x:Name="PageVoiceBox" Margin="20,18,20,16" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Heading + language picker.
+                             Row/Column of VbLangSection is reassigned at
+                             runtime by ApplyResponsiveLayout: at >=650px
+                             window width the picker sits top-right
+                             (Row 0, Col 1); below 650px it drops to a
+                             new full-width row underneath the title. -->
+                        <Grid x:Name="VbHeadingGrid" Grid.Row="0" Margin="0,0,0,14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Desktop Voice Box" FontSize="19" FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="Click the mic, speak, and text appears in your active app."
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           FontSize="12" Margin="0,2,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <!-- Language picker: small section label + rounded pill -->
+                            <StackPanel x:Name="VbLangSection"
+                                        Grid.Row="0" Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right">
+                                <TextBlock Text="RECOGNITION LANGUAGE"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="2,0,0,6" />
+                                <Border Background="{DynamicResource BgSurface}"
+                                        BorderBrush="{DynamicResource Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="16"
+                                        Padding="2"
+                                        MinWidth="220">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#000000" Opacity="0.06"
+                                                          ShadowDepth="0" BlurRadius="14" />
+                                    </Border.Effect>
+                                    <ComboBox x:Name="VbLangCombo"
+                                              Style="{StaticResource VoiceLangComboBox}"
+                                              SelectionChanged="VbLang_SelectionChanged" />
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Centre: mic button with pulse rings -->
+                        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Mic + Stop side-by-side. The Stop button is hidden
+                                     while idle, so the mic centres itself in the card. -->
+                                <StackPanel Grid.Row="0"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+
+                                    <!-- Mic button area (pulse rings + mic) -->
+                                    <Grid>
+                                        <!-- Animated outer pulse ring -->
+                                        <Ellipse x:Name="VbPulseRing1"
+                                                 Width="220" Height="220"
+                                                 Fill="{DynamicResource AccentSoft}"
+                                                 Opacity="0">
+                                            <Ellipse.RenderTransform>
+                                                <ScaleTransform x:Name="VbPulseRing1Scale" CenterX="110" CenterY="110" ScaleX="1" ScaleY="1" />
+                                            </Ellipse.RenderTransform>
+                                            <Ellipse.RenderTransformOrigin>
+                                                <Point X="0.5" Y="0.5" />
+                                            </Ellipse.RenderTransformOrigin>
+                                        </Ellipse>
+                                        <Ellipse x:Name="VbPulseRing2"
+                                                 Width="170" Height="170"
+                                                 Fill="{DynamicResource AccentSoft}"
+                                                 Opacity="0">
+                                            <Ellipse.RenderTransform>
+                                                <ScaleTransform x:Name="VbPulseRing2Scale" CenterX="85" CenterY="85" ScaleX="1" ScaleY="1" />
+                                            </Ellipse.RenderTransform>
+                                            <Ellipse.RenderTransformOrigin>
+                                                <Point X="0.5" Y="0.5" />
+                                            </Ellipse.RenderTransformOrigin>
+                                        </Ellipse>
+
+                                        <!-- Main mic button -->
+                                        <Button x:Name="VbMicButton"
+                                                Width="140" Height="140"
+                                                Cursor="Hand"
+                                                Click="VbMic_Click"
+                                                BorderThickness="0"
+                                                Background="Transparent">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Ellipse x:Name="MicBg">
+                                                            <Ellipse.Fill>
+                                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                    <GradientStop Color="#8A6CFF" Offset="0" />
+                                                                    <GradientStop Color="#5B3FD1" Offset="1" />
+                                                                </LinearGradientBrush>
+                                                            </Ellipse.Fill>
+                                                            <Ellipse.Effect>
+                                                                <DropShadowEffect ShadowDepth="0" BlurRadius="24"
+                                                                                  Color="#7C5CFF" Opacity="0.45" />
+                                                            </Ellipse.Effect>
+                                                        </Ellipse>
+                                                        <Viewbox Width="60" Height="60"
+                                                                 HorizontalAlignment="Center"
+                                                                 VerticalAlignment="Center">
+                                                            <Canvas Width="24" Height="24">
+                                                                <Path Data="{StaticResource IconMic}"
+                                                                      Fill="White" />
+                                                            </Canvas>
+                                                        </Viewbox>
+                                                    </Grid>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="MicBg" Property="Opacity" Value="0.92" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Stop button — visible only while mic is on -->
+                                    <Button x:Name="VbStopButton"
+                                            Width="64" Height="64"
+                                            Margin="32,0,0,0"
+                                            VerticalAlignment="Center"
+                                            Cursor="Hand"
+                                            Visibility="Collapsed"
+                                            Click="VbStop_Click"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            ToolTip="Stop voice typing">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Grid>
+                                                    <Ellipse x:Name="StopBg">
+                                                        <Ellipse.Fill>
+                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                <GradientStop Color="#F2545B" Offset="0" />
+                                                                <GradientStop Color="#DC2626" Offset="1" />
+                                                            </LinearGradientBrush>
+                                                        </Ellipse.Fill>
+                                                        <Ellipse.Effect>
+                                                            <DropShadowEffect ShadowDepth="0" BlurRadius="18"
+                                                                              Color="#DC2626" Opacity="0.45" />
+                                                        </Ellipse.Effect>
+                                                    </Ellipse>
+                                                    <Rectangle Width="20" Height="20"
+                                                               RadiusX="3" RadiusY="3"
+                                                               Fill="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="StopBg" Property="Opacity" Value="0.92" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </StackPanel>
+
+                                <!-- Status line below mic -->
+                                <StackPanel Grid.Row="1" Margin="0,8,0,24"
+                                            HorizontalAlignment="Center">
+                                    <TextBlock x:Name="VbStatusText"
+                                               Text="Tap the mic to start"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="VbSubStatusText"
+                                               Text="Set your OpenAI API key below to enable Whisper"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0" />
+                                    <TextBlock x:Name="VbUsageText"
+                                               Text=""
+                                               FontSize="10.5"
+                                               FontFamily="Consolas"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Bottom panel: API key only (compact). The mic
+                             hotkey was moved to the Settings page so the
+                             mic itself stays visible at MinHeight=720. -->
+                        <Border Grid.Row="2" Style="{StaticResource Card}"
+                                Padding="12,10" Margin="0,10,0,0">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="OPENAI API KEY"
+                                               FontSize="9.5" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextMuted}" />
+                                    <TextBlock Grid.Column="1"
+                                               x:Name="VbKeyStatusText"
+                                               Text="Not set"
+                                               FontSize="9.5"
+                                               Foreground="{DynamicResource Warning}" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="VbApiKeyBox"
+                                             Grid.Column="0"
+                                             MinHeight="30"
+                                             Padding="8,5"
+                                             FontSize="11.5"
+                                             FontFamily="Consolas"
+                                             VerticalContentAlignment="Center" />
+                                    <Button x:Name="VbSaveKeyBtn"
+                                            Grid.Column="1"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Padding="12,4"
+                                            Margin="6,0,0,0"
+                                            Click="VbSaveKey_Click">
+                                        <TextBlock Text="Save" Foreground="White"
+                                                   FontWeight="SemiBold" FontSize="11.5" />
+                                    </Button>
+                                </Grid>
+                                <TextBlock Text="Stored locally. Get a key at platform.openai.com/api-keys"
+                                           FontSize="9.5"
+                                           Foreground="{DynamicResource TextMuted}"
+                                           Margin="0,5,0,0"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- ====================================================== PAGE: TRANSLATOR (premium glassmorphism redesign) ======================================================
+                         Layout:
+                           Row 0  Heading: title + sparkle accent + subtitle
+                                  on left; auto-translate TogglePill +
+                                  provider pill on right.
+                           Row 1  Two language picker GlassCards with an
+                                  animated GlowSwapButton between them.
+                           Row 2  Source / Target GlassCard panels with
+                                  spacious glass editors and pill buttons
+                                  (Translate = TranslateCTA glow).
+                           Row 3  Recent translations GlassCard strip.
+
+                         Two soft purple ambient ellipses behind everything
+                         provide the page-level glow per the design brief. -->
+                    <Grid x:Name="PageTranslator" Margin="20,18,20,16" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Ambient purple glow (top-right) -->
+                        <Ellipse Grid.RowSpan="4"
+                                 Width="380" Height="380"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Top"
+                                 Margin="0,-140,-140,0"
+                                 IsHitTestVisible="False"
+                                 Opacity="0.40">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#7C5CFF" Offset="0" />
+                                    <GradientStop Color="Transparent" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <!-- Ambient purple glow (bottom-left) -->
+                        <Ellipse Grid.RowSpan="4"
+                                 Width="320" Height="320"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Bottom"
+                                 Margin="-120,0,0,-120"
+                                 IsHitTestVisible="False"
+                                 Opacity="0.28">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#A78BFF" Offset="0" />
+                                    <GradientStop Color="Transparent" Offset="1" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- ============ HEADING ============
+                             Title-only. Auto-translate is now on by
+                             default and the provider pill is hidden,
+                             so the right cluster is removed entirely. -->
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Margin="0,0,0,16"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="Translator"
+                                       FontSize="26"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                            <!-- Soft purple "sparkle" badge next to title -->
+                            <Border CornerRadius="7"
+                                    Padding="6,2"
+                                    Margin="10,3,0,0"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource AccentSoft}">
+                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                           Text="&#xE945;"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource Accent}" />
+                            </Border>
+                        </StackPanel>
+
+                        <!-- ============ LANGUAGE PICKERS ============
+                             Default (≥ CompactBreakpoint): horizontal —
+                                 [ source ] [ swap ] [ target ]
+                             Compact (< 650 px): the responsive layout
+                             code in MainWindow.xaml.cs flips this Grid
+                             to a vertical stack —
+                                 [ source ]
+                                 [ swap   ]
+                                 [ target ]
+                             by mutating Row/Column definitions and the
+                             Grid.Row / Grid.Column attached props on the
+                             three named children below. -->
+                        <Grid x:Name="TranslatorLangGrid"
+                              Grid.Row="1"
+                              Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Source picker — identical wrapping Border
+                                 to VbLangSection (Voice Box): white surface,
+                                 1-px Border, 16-radius, 2-px Padding, soft
+                                 black shadow. Keeps the x:Name so the
+                                 responsive layout code can reposition it. -->
+                            <Border x:Name="TranslatorSourceCard"
+                                    Grid.Column="0"
+                                    Background="{DynamicResource BgSurface}"
+                                    BorderBrush="{DynamicResource Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    Padding="2"
+                                    MinWidth="220">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000000" Opacity="0.06"
+                                                      ShadowDepth="0" BlurRadius="14" />
+                                </Border.Effect>
+                                <ComboBox x:Name="SourceLangCombo"
+                                          Style="{StaticResource TranslatorLangComboBox}"
+                                          SelectionChanged="Lang_SelectionChanged" />
+                            </Border>
+
+                            <Button x:Name="SwapLangsBtn"
+                                    Grid.Column="1"
+                                    Style="{StaticResource GlowSwapButton}"
+                                    Margin="14,0,14,0"
+                                    Click="SwapLangs_Click" />
+
+                            <Border x:Name="TranslatorTargetCard"
+                                    Grid.Column="2"
+                                    Background="{DynamicResource BgSurface}"
+                                    BorderBrush="{DynamicResource Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    Padding="2"
+                                    MinWidth="220">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000000" Opacity="0.06"
+                                                      ShadowDepth="0" BlurRadius="14" />
+                                </Border.Effect>
+                                <ComboBox x:Name="TargetLangCombo"
+                                          Style="{StaticResource TranslatorLangComboBox}"
+                                          SelectionChanged="Lang_SelectionChanged" />
+                            </Border>
+                        </Grid>
+
+                        <!-- ============ SOURCE / TARGET PANELS ============ -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Source pane -->
+                            <Border Grid.Column="0"
+                                    Style="{StaticResource GlassCard}"
+                                    Margin="0,0,7,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Section header: SOURCE • LANGUAGE + char count -->
+                                    <Grid Grid.Row="0" Margin="18,14,16,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   x:Name="SourceHeaderText"
+                                                   Text="SOURCE"
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1"
+                                                   x:Name="SourceCharCount"
+                                                   Text="0 / 5000"
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                    </Grid>
+
+                                    <!-- Glass editor -->
+                                    <TextBox x:Name="SourceTextBox"
+                                             Grid.Row="1"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             VerticalScrollBarVisibility="Auto"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             FontSize="14"
+                                             Padding="4,2"
+                                             MinHeight="170"
+                                             Margin="14,4,12,8"
+                                             CaretBrush="{DynamicResource Accent}"
+                                             SelectionBrush="{DynamicResource AccentSoft}"
+                                             Foreground="{DynamicResource TextPrimary}"
+                                             TextChanged="SourceTextBox_TextChanged" />
+
+                                    <!-- Source action bar -->
+                                    <StackPanel Grid.Row="2"
+                                                Orientation="Horizontal"
+                                                Margin="14,4,14,14">
+                                        <Button x:Name="PasteFromMobileBtn"
+                                                Style="{StaticResource TranslatorChipButton}"
+                                                Margin="0,0,8,0"
+                                                Click="PasteFromMobile_Click"
+                                                ToolTip="Fill source with the latest mobile message">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                        Background="#3B82F6">
+                                                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                               Text="&#xE8EA;" FontSize="11"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="From Mobile" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button x:Name="ClearSourceBtn"
+                                                Style="{StaticResource TranslatorChipButton}"
+                                                Click="ClearSource_Click"
+                                                ToolTip="Clear the source text">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                        Background="#EF4444">
+                                                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                               Text="&#xE74D;" FontSize="11"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Clear" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Target pane -->
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource GlassCard}"
+                                    Margin="7,0,0,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" Margin="18,14,16,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   x:Name="TargetHeaderText"
+                                                   Text="TRANSLATION"
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="1"
+                                                   x:Name="TranslationStatusText"
+                                                   Text=""
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}" />
+                                    </Grid>
+
+                                    <Grid Grid.Row="1">
+                                        <TextBox x:Name="TargetTextBox"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap"
+                                                 IsReadOnly="True"
+                                                 VerticalScrollBarVisibility="Auto"
+                                                 BorderThickness="0"
+                                                 Background="Transparent"
+                                                 FontSize="14"
+                                                 Padding="4,2"
+                                                 MinHeight="170"
+                                                 Margin="14,4,12,8"
+                                                 CaretBrush="{DynamicResource Accent}"
+                                                 SelectionBrush="{DynamicResource AccentSoft}"
+                                                 Foreground="{DynamicResource TextPrimary}" />
+
+                                        <!-- Loading shimmer overlay -->
+                                        <Border x:Name="TranslateLoader"
+                                                Background="{DynamicResource BgSurface}"
+                                                Opacity="0.88"
+                                                CornerRadius="14"
+                                                Margin="6"
+                                                Visibility="Collapsed">
+                                            <StackPanel VerticalAlignment="Center"
+                                                        HorizontalAlignment="Center">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE895;"
+                                                           FontSize="22"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform x:Name="LoaderRotate" CenterX="11" CenterY="11" />
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                                <TextBlock Text="Translating..."
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           FontSize="12"
+                                                           Margin="0,8,0,0"
+                                                           HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Target action bar: Copy (ghost) on the
+                                         left, Translate (glow CTA) on the right. -->
+                                    <Grid Grid.Row="2" Margin="14,4,14,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0"
+                                                x:Name="CopyTranslationBtn"
+                                                Style="{StaticResource TranslatorChipButton}"
+                                                Click="CopyTranslation_Click"
+                                                ToolTip="Copy the translation">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                        Background="#22C55E">
+                                                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                               Text="&#xE8C8;" FontSize="11"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                </Border>
+                                                <TextBlock Text="Copy" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Grid.Column="2"
+                                                x:Name="TranslateBtn"
+                                                Style="{StaticResource TranslateCTA}"
+                                                Click="TranslateBtn_Click">
+                                            <StackPanel Orientation="Horizontal" Margin="2,0">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE945;"
+                                                           FontSize="12"
+                                                           Foreground="White"
+                                                           Margin="0,0,7,0"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="Translate"
+                                                           Foreground="White"
+                                                           FontSize="12.5"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- ============ RECENT TRANSLATIONS ============ -->
+                        <Border Grid.Row="3"
+                                Style="{StaticResource GlassCard}"
+                                Margin="0,12,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="18,12,14,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               FontFamily="{DynamicResource IconFont}"
+                                               Text="&#xE823;"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="Recent translations"
+                                               FontSize="12.5"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               VerticalAlignment="Center" />
+                                    <Button Grid.Column="2"
+                                            x:Name="ClearTranslationHistoryBtn"
+                                            Style="{StaticResource TranslatorChipButton}"
+                                            MinWidth="100"
+                                            Click="ClearTranslationHistory_Click"
+                                            ToolTip="Remove all saved translations">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Style="{StaticResource TranslatorChipIconBadge}"
+                                                    Background="#EF4444">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE74D;" FontSize="11"
+                                                           Foreground="White"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Clear all" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <ListBox x:Name="TranslationHistoryList"
+                                         Grid.Row="1"
+                                         Style="{StaticResource FlatListBox}"
+                                         MaxHeight="140"
+                                         Margin="10,0,10,12">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource BgElevated}"
+                                                    BorderBrush="{DynamicResource Border}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12,8"
+                                                    Margin="4,3"
+                                                    Cursor="Hand"
+                                                    MouseLeftButtonUp="HistoryItem_Click"
+                                                    Tag="{Binding}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0"
+                                                            Background="{DynamicResource AccentSoft}"
+                                                            CornerRadius="999"
+                                                            Padding="9,3"
+                                                            Margin="0,0,10,0"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding LangPairDisplay}"
+                                                                   FontSize="10"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource Accent}" />
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding Preview}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               FontSize="12"
+                                                               VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding CreatedAtDisplay}"
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource TextMuted}"
+                                                               Margin="10,0,0,0"
+                                                               VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ====================================================== PAGE: SETTINGS ====================================================== -->
+                    <Grid x:Name="PageSettings" Margin="20,18,20,16" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                            <TextBlock Text="Settings" FontSize="19" FontWeight="SemiBold" />
+                            <TextBlock Text="Tune Voice Typing Desktop to your taste."
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="12" Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+
+                                <!-- Appearance -->
+                                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE790;" FontSize="14"
+                                                       Foreground="{DynamicResource Accent}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" />
+                                            <TextBlock Text="Appearance" FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="Pick the theme. System follows your Windows setting."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontSize="11.5" Margin="0,0,0,14" />
+
+                                        <TextBlock Text="THEME"
+                                                   FontSize="9.5" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextMuted}" />
+
+                                        <Border Background="{DynamicResource BgElevated}"
+                                                BorderBrush="{DynamicResource Border}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="3"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,6,0,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <RadioButton x:Name="ThemeSystemBtn"
+                                                             Style="{StaticResource SegmentButton}"
+                                                             GroupName="ThemePick"
+                                                             Click="ThemeChoice_Click"
+                                                             Tag="system">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                   Text="&#xE770;" FontSize="11"
+                                                                   Margin="0,0,6,0"
+                                                                   VerticalAlignment="Center" />
+                                                        <TextBlock Text="System" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </RadioButton>
+                                                <RadioButton x:Name="ThemeLightBtn"
+                                                             Style="{StaticResource SegmentButton}"
+                                                             GroupName="ThemePick"
+                                                             Click="ThemeChoice_Click"
+                                                             Tag="light">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                   Text="&#xE706;" FontSize="11"
+                                                                   Margin="0,0,6,0"
+                                                                   VerticalAlignment="Center" />
+                                                        <TextBlock Text="Light" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </RadioButton>
+                                                <RadioButton x:Name="ThemeDarkBtn"
+                                                             Style="{StaticResource SegmentButton}"
+                                                             GroupName="ThemePick"
+                                                             Click="ThemeChoice_Click"
+                                                             Tag="dark">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                                   Text="&#xE708;" FontSize="11"
+                                                                   Margin="0,0,6,0"
+                                                                   VerticalAlignment="Center" />
+                                                        <TextBlock Text="Dark" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </RadioButton>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Window behaviour -->
+                                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE713;" FontSize="14"
+                                                       Foreground="{DynamicResource Accent}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" />
+                                            <TextBlock Text="Window" FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="Control how the window behaves."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontSize="11.5" Margin="0,0,0,14" />
+
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Always on top"
+                                                           FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock Text="Keep the window above other apps."
+                                                           Foreground="{DynamicResource TextMuted}"
+                                                           FontSize="11" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                            <CheckBox Grid.Column="1"
+                                                      x:Name="PinSettingCheck"
+                                                      Click="PinSettingCheck_Click"
+                                                      VerticalAlignment="Center" />
+                                        </Grid>
+
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Mic Hotkey.
+                                     Moved here from the Voice Box page so
+                                     the mic button stays prominent there.
+                                     VbHotkeyBox / VbClearHotkeyBtn keep
+                                     their existing names so the
+                                     code-behind handlers (PreviewKeyDown,
+                                     GotFocus, etc.) bind unchanged. -->
+                                <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE765;" FontSize="14"
+                                                       Foreground="{DynamicResource Accent}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" />
+                                            <TextBlock Text="Mic Hotkey" FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="Toggle the mic from anywhere in Windows with one key combo."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontSize="11.5" Margin="0,0,0,14" />
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="VbHotkeyBox"
+                                                     Grid.Column="0"
+                                                     MinHeight="36"
+                                                     Padding="10,7"
+                                                     FontSize="12.5"
+                                                     IsReadOnly="True"
+                                                     Cursor="Hand"
+                                                     Text="Click here, then press keys"
+                                                     GotFocus="VbHotkey_GotFocus"
+                                                     LostFocus="VbHotkey_LostFocus"
+                                                     PreviewKeyDown="VbHotkey_PreviewKeyDown" />
+                                            <Button x:Name="VbClearHotkeyBtn"
+                                                    Grid.Column="1"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Padding="12,6"
+                                                    Margin="8,0,0,0"
+                                                    Click="VbClearHotkey_Click">
+                                                <TextBlock Text="Clear" FontSize="12" />
+                                            </Button>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- About -->
+                                <Border Style="{StaticResource Card}">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE946;" FontSize="14"
+                                                       Foreground="{DynamicResource Accent}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0" />
+                                            <TextBlock Text="About" FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="Voice Typing Desktop v1.0"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   FontSize="12" Margin="0,8,0,0" />
+                                        <TextBlock Text="Receive voice-typed text from your phone, instantly."
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   FontSize="11.5" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- ====================================================== PAGE: ABOUT (premium redesign)
+                         ======================================================
+                         • Single Check-for-Updates button (header only).
+                         • App Hero card: light-purple gradient + soft glow.
+                         • Profile card: 82px circular avatar with purple
+                           ring; falls back to "MI" initials if the PNG is
+                           missing (handled by AbtProfileImage_ImageFailed).
+                         • 4 feature cards in a 2-col grid (TranslatorLangGrid
+                           style stacking is applied in compact mode).
+                         • Software Updates card has NO button. -->
+                    <Grid x:Name="PageAbout" Margin="20,18,20,16" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- ============ HEADER ============
+                             Left: title "About" + subtitle.
+                             Right: ONE Check-for-Updates AboutPrimaryButton. -->
+                        <Grid Grid.Row="0" Margin="0,0,0,18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="About"
+                                           FontSize="22"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}" />
+                                <TextBlock Text="App information"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           FontSize="12.5"
+                                           Margin="0,3,0,0" />
+                            </StackPanel>
+                            <Button x:Name="AbtCheckUpdatesBtn"
+                                    Grid.Column="1"
+                                    Style="{StaticResource AboutPrimaryButton}"
+                                    VerticalAlignment="Center"
+                                    Click="AbtCheckUpdates_Click">
+                                <TextBlock x:Name="AbtCheckUpdatesBtnText"
+                                           Text="Check for Updates" Foreground="White" />
+                            </Button>
+                        </Grid>
+
+                        <!-- Body -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+
+                                <!-- ===== APP HERO CARD =====
+                                     Light-purple gradient surface with a 24-px
+                                     corner and a soft accent shadow that sells
+                                     the "premium hero" feel without any blur. -->
+                                <Border CornerRadius="24"
+                                        Padding="22"
+                                        Margin="0,0,0,16"
+                                        BorderBrush="{DynamicResource Border}"
+                                        BorderThickness="1"
+                                        SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#F4EFFF" Offset="0" />
+                                            <GradientStop Color="#E8DFFF" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#6D4BFF"
+                                                          Opacity="0.18"
+                                                          BlurRadius="26"
+                                                          ShadowDepth="0" />
+                                    </Border.Effect>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- App icon: gradient tile with a mic glyph. -->
+                                        <Border Grid.Column="0"
+                                                Width="64" Height="64"
+                                                CornerRadius="16"
+                                                Background="{DynamicResource AccentGradient}"
+                                                VerticalAlignment="Center">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#6D4BFF"
+                                                                  Opacity="0.45"
+                                                                  BlurRadius="16"
+                                                                  ShadowDepth="0" />
+                                            </Border.Effect>
+                                            <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                       Text="&#xE720;"
+                                                       FontSize="28"
+                                                       Foreground="White"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1"
+                                                    Margin="18,0,0,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Voice Typing Desktop"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Voice typing and desktop dictation for every text field."
+                                                       FontSize="12.5"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                            <!-- Version badge removed.
+                                                 The canonical place to read
+                                                 the current version is the
+                                                 "Software updates" card. -->
+                                            <TextBlock x:Name="AbtVersionTextLarge"
+                                                       Visibility="Collapsed" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- ===== DEVELOPER PROFILE CARD =====
+                                     White card with the circular avatar
+                                     (purple ring) on the left and the dev
+                                     bio + social pills on the right. -->
+                                <Border Style="{StaticResource AboutFeatureCard}"
+                                        Padding="22"
+                                        Margin="0,0,0,16">
+                                    <Grid x:Name="AbtProfileGrid">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Avatar tile: 82×82 circular image
+                                             with a 2-px purple ring + soft
+                                             glow. Layering, bottom-up:
+                                               1. AccentSoft circle + "MI"
+                                                  initials   (fallback)
+                                               2. Image clipped to a circle
+                                                  via Border.CornerRadius
+                                                  + ClipToBounds. If the
+                                                  PNG can't load, the
+                                                  ImageFailed handler in
+                                                  MainWindow.About.cs hides
+                                                  the Image so the initials
+                                                  underneath show through.
+                                               3. 2-px accent ring on top. -->
+                                        <Grid Grid.Column="0"
+                                              x:Name="AbtAvatarBox"
+                                              Width="82" Height="82"
+                                              VerticalAlignment="Top">
+                                            <Grid.Effect>
+                                                <DropShadowEffect Color="#6D4BFF"
+                                                                  Opacity="0.30"
+                                                                  BlurRadius="16"
+                                                                  ShadowDepth="0" />
+                                            </Grid.Effect>
+
+                                            <!-- Layer 1: soft purple fallback fill.
+                                                 Stays visible only until the real
+                                                 PNG finishes loading. -->
+                                            <Ellipse Fill="{DynamicResource AccentSoft}" />
+                                            <TextBlock x:Name="AbtProfileInitials"
+                                                       Text="MI"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource Accent}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+
+                                            <!-- Layer 2: real photo as an ImageBrush
+                                                 inside an Ellipse. Painting the
+                                                 photo through an elliptical brush
+                                                 gives us a truly round crop
+                                                 (Border + ClipToBounds doesn't
+                                                 clip child Images in WPF). -->
+                                            <Ellipse x:Name="AbtProfileImageHost">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush x:Name="AbtProfileImageBrush"
+                                                                ImageSource="pack://application:,,,/Assets/profile.png"
+                                                                Stretch="UniformToFill"
+                                                                RenderOptions.BitmapScalingMode="HighQuality" />
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+
+                                            <!-- Hidden helper: only used by the
+                                                 ImageFailed fallback path so we
+                                                 can detect a missing asset and
+                                                 keep showing the initials. -->
+                                            <Image x:Name="AbtProfileImage"
+                                                   Visibility="Collapsed"
+                                                   Source="pack://application:,,,/Assets/profile.png"
+                                                   ImageFailed="AbtProfileImage_ImageFailed" />
+
+                                            <!-- Layer 3: crisp purple ring on top. -->
+                                            <Ellipse Stroke="{DynamicResource Accent}"
+                                                     StrokeThickness="2"
+                                                     IsHitTestVisible="False" />
+                                        </Grid>
+
+                                        <StackPanel Grid.Column="1"
+                                                    x:Name="AbtProfileTextPanel"
+                                                    Margin="18,0,0,0"
+                                                    VerticalAlignment="Center">
+                                            <TextBlock Text="Muinol Islam"
+                                                       FontSize="17"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Developer and digital tool creator"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       Margin="0,3,0,0" />
+                                            <TextBlock Text="I build useful tools for productivity, automation, and digital workflows."
+                                                       FontSize="12.5"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,10,0,0" />
+
+                                            <!-- Social pill row: WrapPanel so
+                                                 the pills flow to a second
+                                                 line on narrow widths. -->
+                                            <WrapPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                                <Button Style="{StaticResource AboutSocialPill}"
+                                                        Margin="0,0,8,8"
+                                                        Click="AbtWebsite_Click"
+                                                        ToolTip="Open website">
+                                                    <TextBlock Text="Website" />
+                                                </Button>
+                                                <Button Style="{StaticResource AboutSocialPill}"
+                                                        Margin="0,0,8,8"
+                                                        Click="AbtYouTube_Click"
+                                                        ToolTip="YouTube channel">
+                                                    <TextBlock Text="YouTube" />
+                                                </Button>
+                                                <Button Style="{StaticResource AboutSocialPill}"
+                                                        Margin="0,0,8,8"
+                                                        Click="AbtEmail_Click"
+                                                        ToolTip="Send email">
+                                                    <TextBlock Text="Email" />
+                                                </Button>
+                                                <Button Style="{StaticResource AboutSocialPill}"
+                                                        Margin="0,0,8,8"
+                                                        Click="AbtFacebook_Click"
+                                                        ToolTip="Facebook page">
+                                                    <TextBlock Text="Facebook" />
+                                                </Button>
+                                                <Button Style="{StaticResource AboutSocialPill}"
+                                                        Margin="0,0,0,8"
+                                                        Click="AbtTelegram_Click"
+                                                        ToolTip="Telegram channel">
+                                                    <TextBlock Text="Telegram" />
+                                                </Button>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- ===== FEATURE CARDS (2 × 2 grid) =====
+                                     The grid is named so MainWindow.xaml.cs
+                                     can flip it to a single-column stack
+                                     when the window goes compact. -->
+                                <Grid x:Name="AbtFeatureGrid" Margin="0,0,0,16">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Card 1: Fast Dictation -->
+                                    <Border x:Name="AbtFeatureCard1"
+                                            Grid.Row="0" Grid.Column="0"
+                                            Style="{StaticResource AboutFeatureCard}"
+                                            Margin="0,0,8,8">
+                                        <StackPanel>
+                                            <Border Width="38" Height="38"
+                                                    CornerRadius="11"
+                                                    Background="{DynamicResource AccentSoft}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,0,0,12">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xEC4A;" FontSize="15"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Fast Dictation"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Convert speech to text quickly and send it anywhere."
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Card 2: Desktop + Mobile Sync -->
+                                    <Border x:Name="AbtFeatureCard2"
+                                            Grid.Row="0" Grid.Column="1"
+                                            Style="{StaticResource AboutFeatureCard}"
+                                            Margin="8,0,0,8">
+                                        <StackPanel>
+                                            <Border Width="38" Height="38"
+                                                    CornerRadius="11"
+                                                    Background="{DynamicResource AccentSoft}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,0,0,12">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE8EA;" FontSize="15"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Desktop + Mobile Sync"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Connect your phone and desktop for smooth cross-device typing."
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Card 3: Multiple Languages -->
+                                    <Border x:Name="AbtFeatureCard3"
+                                            Grid.Row="1" Grid.Column="0"
+                                            Style="{StaticResource AboutFeatureCard}"
+                                            Margin="0,8,8,0">
+                                        <StackPanel>
+                                            <Border Width="38" Height="38"
+                                                    CornerRadius="11"
+                                                    Background="{DynamicResource AccentSoft}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,0,0,12">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE774;" FontSize="15"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Multiple Languages"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Use Bengali, English, Hindi, Urdu and more."
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Card 4: Whisper Support -->
+                                    <Border x:Name="AbtFeatureCard4"
+                                            Grid.Row="1" Grid.Column="1"
+                                            Style="{StaticResource AboutFeatureCard}"
+                                            Margin="8,8,0,0">
+                                        <StackPanel>
+                                            <Border Width="38" Height="38"
+                                                    CornerRadius="11"
+                                                    Background="{DynamicResource AccentSoft}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,0,0,12">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE720;" FontSize="15"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <TextBlock Text="Whisper Support"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}" />
+                                            <TextBlock Text="Use OpenAI Whisper API for accurate transcription."
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- ===== SOFTWARE UPDATES CARD =====
+                                     Read-only status card. The "Check for
+                                     Updates" button now lives only in the
+                                     header — this card just shows state. -->
+                                <Border Style="{StaticResource AboutFeatureCard}"
+                                        Padding="22"
+                                        Margin="0,0,0,4">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                            <Border Width="34" Height="34"
+                                                    CornerRadius="10"
+                                                    Background="{DynamicResource AccentSoft}"
+                                                    Margin="0,0,12,0">
+                                                <TextBlock FontFamily="{DynamicResource IconFont}"
+                                                           Text="&#xE777;"
+                                                           FontSize="14"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="Software Updates"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource TextPrimary}" />
+                                                <TextBlock Text="Stay up to date with the latest features and fixes."
+                                                           FontSize="11.5"
+                                                           Foreground="{DynamicResource TextSecondary}"
+                                                           Margin="0,2,0,0" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Grid Margin="0,2,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                                       Text="Current version"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       Margin="0,0,0,8" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                                       x:Name="AbtCurrentVersion"
+                                                       Text="1.0.0"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       Margin="0,0,0,8" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                                       Text="Status"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       Margin="0,0,0,8" />
+                                            <StackPanel Grid.Row="1" Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Margin="0,0,0,8">
+                                                <Ellipse x:Name="AbtUpdateDot"
+                                                         Width="8" Height="8"
+                                                         Fill="{DynamicResource Success}"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,8,0" />
+                                                <TextBlock x:Name="AbtUpdateStatus"
+                                                           Text="Up to date"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource Success}" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0"
+                                                       Text="Last checked"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMuted}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1"
+                                                       x:Name="AbtLastChecked"
+                                                       Text="Not checked yet"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+
+                <!-- ====================================================== SIDEBAR (icon-only, fixed thin rail) ======================================================
+                     NOTE: ClipToBounds removed and shadow opacity softened.
+                     ClipToBounds=True caused WPF to render the DropShadow
+                     against the rectangular bounds of the Border, leaking
+                     grey square corners outside the rounded radius. The
+                     CornerRadius alone correctly clips Background; child
+                     content inside does not overflow into the corners. -->
+                <Border x:Name="DrawerPanel"
+                        Background="{DynamicResource BgSurface}"
+                        BorderBrush="{DynamicResource Border}"
+                        BorderThickness="1"
+                        CornerRadius="14"
+                        Width="52"
+                        Margin="8,12,0,12"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Stretch"
+                        SnapsToDevicePixels="True">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="0"
+                                          BlurRadius="20"
+                                          Color="Black"
+                                          Opacity="0.12" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Drawer header (removed — icon-only mode) -->
+                        <TextBlock x:Name="DrawerLabel"
+                                   Grid.Row="0"
+                                   Visibility="Collapsed" />
+
+                        <ListBox x:Name="NavList" Grid.Row="1"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FocusVisualStyle="{x:Null}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ItemContainerStyle="{StaticResource NavListBoxItem}"
+                                 SelectedIndex="0"
+                                 SelectionChanged="NavList_SelectionChanged">
+                            <!-- Mobile Sync -->
+                            <ListBoxItem ToolTip="Mobile Sync">
+                                <Viewbox Width="20" Height="20"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconMobileSync}"
+                                          Fill="{DynamicResource TextPrimary}" />
+                                </Viewbox>
+                            </ListBoxItem>
+                            <!-- Voice Box -->
+                            <ListBoxItem ToolTip="Desktop Voice Box">
+                                <Viewbox Width="20" Height="20"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconMic}"
+                                          Fill="{DynamicResource TextPrimary}" />
+                                </Viewbox>
+                            </ListBoxItem>
+                            <!-- Translator -->
+                            <ListBoxItem ToolTip="Translator">
+                                <Viewbox Width="20" Height="20"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconTranslate}"
+                                          Fill="{DynamicResource TextPrimary}" />
+                                </Viewbox>
+                            </ListBoxItem>
+                            <!-- Settings -->
+                            <ListBoxItem ToolTip="Settings">
+                                <Viewbox Width="20" Height="20"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconSettings}"
+                                          Fill="{DynamicResource TextPrimary}" />
+                                </Viewbox>
+                            </ListBoxItem>
+                            <!-- About -->
+                            <ListBoxItem ToolTip="About">
+                                <Viewbox Width="20" Height="20"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Path Data="{StaticResource IconInfo}"
+                                          Fill="{DynamicResource TextPrimary}" />
+                                </Viewbox>
+                            </ListBoxItem>
+                        </ListBox>
+
+                        <!-- Social links + connection dot -->
+                        <StackPanel Grid.Row="2" Margin="0,4,0,10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Bottom">
+                            <!-- Connection dot -->
+                            <Grid Width="36" Height="36"
+                                  HorizontalAlignment="Center"
+                                  Margin="0,0,0,6">
+                                <Ellipse Width="28" Height="28"
+                                         Stroke="{DynamicResource Border}"
+                                         StrokeThickness="1"
+                                         Fill="Transparent"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center" />
+                                <Ellipse x:Name="ConnDotCollapsed"
+                                         Width="10" Height="10"
+                                         Fill="{DynamicResource TextMuted}"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center" />
+                            </Grid>
+
+                            <!-- Telegram (brand cyan) -->
+                            <Button Style="{StaticResource IconButton}"
+                                    Width="36" Height="36"
+                                    Margin="0,2,0,2"
+                                    ToolTip="Telegram Channel"
+                                    Click="TelegramBtn_Click">
+                                <Grid Width="30" Height="30">
+                                    <!-- Circular brand background -->
+                                    <Ellipse Width="28" Height="28"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center">
+                                        <Ellipse.Fill>
+                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                <GradientStop Color="#37BBFE" Offset="0" />
+                                                <GradientStop Color="#2D96E3" Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <!-- Fixed 24x24 canvas → Viewbox centres reliably -->
+                                    <Viewbox Width="15" Height="15"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Stretch="Uniform">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource IconTelegram}"
+                                                  Fill="White" />
+                                        </Canvas>
+                                    </Viewbox>
+                                </Grid>
+                            </Button>
+
+                            <!-- WhatsApp (brand green) -->
+                            <Button Style="{StaticResource IconButton}"
+                                    Width="36" Height="36"
+                                    Margin="0,2,0,0"
+                                    ToolTip="WhatsApp"
+                                    Click="WhatsAppBtn_Click">
+                                <Grid Width="30" Height="30">
+                                    <Ellipse Width="28" Height="28"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center">
+                                        <Ellipse.Fill>
+                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                <GradientStop Color="#25D366" Offset="0" />
+                                                <GradientStop Color="#128C7E" Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <Viewbox Width="15" Height="15"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             Stretch="Uniform">
+                                        <Canvas Width="24" Height="24">
+                                            <Path Data="{StaticResource IconWhatsApp}"
+                                                  Fill="White" />
+                                        </Canvas>
+                                    </Viewbox>
+                                </Grid>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ============================ STATUS BAR ============================ -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource BgSurface}"
+                    BorderBrush="{DynamicResource Border}"
+                    BorderThickness="0,1,0,0">
+                <Grid Margin="14,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="StatusBarText" Text="Ready"
+                               Grid.Column="0" FontSize="11"
+                               Foreground="{DynamicResource TextMuted}"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <TextBlock x:Name="PinStatusLabel" Text=""
+                                   FontSize="11"
+                                   Foreground="{DynamicResource Accent}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0" />
+                        <TextBlock Text="v1.0" FontSize="11"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
