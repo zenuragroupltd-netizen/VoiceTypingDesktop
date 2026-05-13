@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8A6CFF"/>
+      <stop offset="1" stop-color="#4F2EE0"/>
+    </linearGradient>
+    <linearGradient id="mic" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E6DEFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.35"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded background square -->
+  <rect x="8" y="8" width="240" height="240" rx="52" ry="52" fill="url(#bg)"/>
+
+  <!-- Soft inner highlight -->
+  <rect x="16" y="16" width="224" height="112" rx="44" ry="44"
+        fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- Microphone -->
+  <g filter="url(#shadow)">
+    <!-- Mic body -->
+    <rect x="104" y="64" width="48" height="96" rx="24" ry="24" fill="url(#mic)"/>
+    <!-- Mic stand arc -->
+    <path d="M72 128 a56 56 0 0 0 112 0"
+          fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round"/>
+    <!-- Stem -->
+    <rect x="122" y="176" width="12" height="28" rx="6" fill="#FFFFFF"/>
+    <!-- Base -->
+    <rect x="92" y="200" width="72" height="12" rx="6" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Sound waves -->
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="8" opacity="0.85">
+    <path d="M44 120 Q48 128 44 136"/>
+    <path d="M28 104 Q36 128 28 152"/>
+    <path d="M212 120 Q208 128 212 136"/>
+    <path d="M228 104 Q220 128 228 152"/>
+  </g>
+</svg>

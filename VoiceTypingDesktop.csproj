@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>VoiceTypingDesktop</RootNamespace>
+    <AssemblyName>VoiceTypingDesktop</AssemblyName>
+    <LangVersion>latest</LangVersion>
+
+    <!-- App branding / shell integration.
+         These fields are read by Windows Explorer (right-click → Properties
+         → Details), by SmartScreen for publisher attribution, and by the
+         installer (via the AssemblyInformationalVersion attribute). -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AssemblyTitle>Voice Typing Desktop</AssemblyTitle>
+    <Product>Voice Typing Desktop</Product>
+    <Company>Muinol Islam</Company>
+    <Authors>Muinol Islam</Authors>
+    <Copyright>© 2026 Muinol Islam</Copyright>
+    <Description>Voice typing and desktop dictation for every text field. Supports Bengali, English, Hindi, Urdu and 60+ more languages with built-in translation and phone-to-desktop pairing.</Description>
+    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="System.Speech" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="Assets\app.ico" />
+    <!-- Source-of-truth SVG for the Google Play badge. The actual on-screen
+         icon is drawn as inline <Path> geometry in MainWindow.xaml using
+         the same coordinates, so this file is kept only as documentation. -->
+    <None Include="Assets\google-play-icon.svg" />
+    <!-- Country flag PNGs used by the voice-page language picker.
+         Sourced from flagcdn.com (w40 PNGs ~1-2 KB each). The wildcard
+         picks up every PNG in Assets\Flags so adding a new country is
+         a drop-in operation. -->
+    <Resource Include="Assets\Flags\*.png" />
+    <!-- Developer profile picture shown on the About page. The default
+         is a purple-gradient placeholder with a "K" initial; replace
+         Assets\profile.png with any 256x256 PNG to customise. -->
+    <Resource Include="Assets\profile.png" />
+  </ItemGroup>
+
+</Project>

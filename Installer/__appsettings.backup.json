@@ -1,0 +1,13 @@
+{
+  "SUPABASE_URL": "https://sqmrgdejlfdhjftettkm.supabase.co",
+  "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxbXJnZGVqbGZkaGpmdGV0dGttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0Mjg1MTAsImV4cCI6MjA5NDAwNDUxMH0.u9lG3pqwSqH_gmeI1KZnbFb5UgOYd-046LE-j11AXFs",
+  "desktop_device_id": "3c610347-0b65-45ab-9a84-6a7256605785",
+  "current_session_id": "",
+  "current_pair_code": "DMQ3M4",
+  "paired_until_utc": "2026-05-13T18:07:10.2009177Z",
+  "theme": "light",
+  "whisper_api_key": "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",
+  "whisper_language": "bn-BD",
+  "auto_paste_after_record": false,
+  "mic_hotkey": "1000|76|L"
+}

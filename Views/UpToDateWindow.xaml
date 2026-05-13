@@ -1,0 +1,73 @@
+<Window x:Class="VoiceTypingDesktop.Views.UpToDateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="You're up to date"
+        Width="440" Height="300"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource BgBase}"
+        Foreground="{DynamicResource TextPrimary}"
+        FontFamily="Segoe UI Variable, Segoe UI"
+        WindowStyle="SingleBorderWindow">
+
+    <Border Background="{DynamicResource BgBase}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Body -->
+            <StackPanel Grid.Row="0" VerticalAlignment="Center"
+                        HorizontalAlignment="Center" Margin="32">
+                <!-- Success check badge -->
+                <Border Width="64" Height="64" CornerRadius="32"
+                        HorizontalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#22C55E" Offset="0" />
+                            <GradientStop Color="#15803D" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock FontFamily="{DynamicResource IconFont}"
+                               Text="&#xE73E;" FontSize="28"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Text="You're up to date"
+                           FontSize="18" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,18,0,6" />
+
+                <TextBlock x:Name="DetailText"
+                           Text="You already have the latest version (v1.0.0)."
+                           FontSize="12.5"
+                           Foreground="{DynamicResource TextSecondary}"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           MaxWidth="340"
+                           TextAlignment="Center" />
+            </StackPanel>
+
+            <!-- Footer -->
+            <Border Grid.Row="1"
+                    Background="{DynamicResource BgSurface}"
+                    BorderBrush="{DynamicResource Border}"
+                    BorderThickness="0,1,0,0"
+                    Padding="20,12">
+                <Button HorizontalAlignment="Right"
+                        Style="{StaticResource PrimaryButton}"
+                        Padding="22,8"
+                        Click="OkBtn_Click">
+                    <TextBlock Text="OK" Foreground="White"
+                               FontWeight="SemiBold" FontSize="12.5" />
+                </Button>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

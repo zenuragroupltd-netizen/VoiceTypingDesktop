@@ -1,0 +1,2 @@
+Unhandled exception. System.IO.FileLoadException: Could not load file or assembly 'C:\Users\moina\Desktop\VoiceTypingDesktop\bin\Debug\net8.0-windows\VoiceTypingDesktop.dll'. An Application Control policy has blocked this file. (0x800711C7)
+File name: 'C:\Users\moina\Desktop\VoiceTypingDesktop\bin\Debug\net8.0-windows\VoiceTypingDesktop.dll'

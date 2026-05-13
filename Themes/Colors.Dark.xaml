@@ -1,0 +1,88 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         DARK THEME
+         All brush keys here MUST match those in Colors.Light.xaml so
+         DynamicResource lookups switch correctly at runtime.
+         ============================================================ -->
+
+    <!-- Raw colors (kept for reference / gradients).
+         Replaced near-black #0B0C11 with the cooler #0F1117 family
+         (slight blue cast) so the UI reads as premium product-design
+         dark — same vibe as Linear / Raycast / Tailwind gray-900. -->
+    <Color x:Key="BgBaseColor">#0F1117</Color>
+    <Color x:Key="BgSurfaceColor">#12141C</Color>
+    <Color x:Key="BgElevatedColor">#181B24</Color>
+    <Color x:Key="BgHoverColor">#232634</Color>
+    <Color x:Key="BorderColor">#1E2230</Color>
+    <Color x:Key="BorderStrongColor">#2D3142</Color>
+
+    <Color x:Key="TextPrimaryColor">#F2F3F7</Color>
+    <Color x:Key="TextSecondaryColor">#9AA0B0</Color>
+    <Color x:Key="TextMutedColor">#6B6E7D</Color>
+
+    <Color x:Key="AccentColor">#7C5CFF</Color>
+    <Color x:Key="AccentHoverColor">#8E74FF</Color>
+    <Color x:Key="AccentPressedColor">#6A4BE6</Color>
+    <Color x:Key="AccentSoftColor">#2A214B</Color>
+
+    <Color x:Key="SuccessColor">#4ADE80</Color>
+    <Color x:Key="WarningColor">#FBBF24</Color>
+    <Color x:Key="DangerColor">#F87171</Color>
+
+    <!-- Brushes — premium dark palette
+         BgBase     #0F1117  app background (deepest)
+         BgSurface  #12141C  cards / panels (one step up)
+         BgElevated #181B24  elevated surfaces (popups, drawers)
+         BgHover    #232634  hover/highlight tint
+         Border     #1E2230  subtle dividers
+    -->
+    <SolidColorBrush x:Key="BgBase" Color="#0F1117" />
+    <SolidColorBrush x:Key="BgSurface" Color="#12141C" />
+    <SolidColorBrush x:Key="BgElevated" Color="#181B24" />
+    <SolidColorBrush x:Key="BgHover" Color="#232634" />
+    <SolidColorBrush x:Key="Border" Color="#1E2230" />
+    <SolidColorBrush x:Key="BorderStrong" Color="#2D3142" />
+
+    <SolidColorBrush x:Key="TextPrimary" Color="#F2F3F7" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#9AA0B0" />
+    <SolidColorBrush x:Key="TextMuted" Color="#6B6E7D" />
+
+    <SolidColorBrush x:Key="Accent" Color="#7C5CFF" />
+    <SolidColorBrush x:Key="AccentHover" Color="#8E74FF" />
+    <SolidColorBrush x:Key="AccentPressed" Color="#6A4BE6" />
+    <SolidColorBrush x:Key="AccentSoft" Color="#2A214B" />
+    <!-- AccentMid: between AccentSoft and Accent for the dark theme. -->
+    <SolidColorBrush x:Key="AccentMid" Color="#3D2F6E" />
+
+    <SolidColorBrush x:Key="Success" Color="#4ADE80" />
+    <SolidColorBrush x:Key="Warning" Color="#FBBF24" />
+    <SolidColorBrush x:Key="Danger" Color="#F87171" />
+
+    <!-- Drawer-specific highlight brushes. Kept distinct from BgHover /
+         AccentSoft so the sidebar reads as a single elevated surface
+         rather than multiple competing chips. -->
+    <SolidColorBrush x:Key="NavHoverBg"    Color="#FFFFFFFF" Opacity="0.06" />
+    <SolidColorBrush x:Key="NavSelectedBg" Color="#7C5CFF"   Opacity="0.16" />
+
+    <!-- QR background is always pure white so the code remains scannable -->
+    <SolidColorBrush x:Key="QrCanvas" Color="#FFFFFF" />
+
+    <!-- Gradients -->
+    <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#8A6CFF" Offset="0" />
+        <GradientStop Color="#5B3FD1" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="HeaderGlow" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#1A1530" Offset="0" />
+        <GradientStop Color="#0F1018" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="CardGlow" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#1B1D27" Offset="0" />
+        <GradientStop Color="#14151C" Offset="1" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>
