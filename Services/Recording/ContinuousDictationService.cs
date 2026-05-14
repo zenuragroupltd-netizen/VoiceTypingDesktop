@@ -64,6 +64,24 @@ public sealed class ContinuousDictationService : IDisposable
     /// </summary>
     public event EventHandler<double>? ChunkTranscribed;
 
+    /// <summary>
+    /// Raised the moment a chunk is finalized and about to be sent to
+    /// Whisper. <c>e</c> is the chunk's audio duration in seconds. The
+    /// UI uses this to show "Sending X.Xs of audio to Whisper..." so
+    /// the user knows the pipeline is working even if no text comes
+    /// back. Fires BEFORE <see cref="ChunkTranscribed"/>.
+    /// </summary>
+    public event EventHandler<double>? ChunkSending;
+
+    /// <summary>
+    /// Raised when Whisper completes but the returned text is empty or
+    /// flagged as no-speech / too-short. The string carries Whisper's
+    /// raw response so the UI can surface why the chunk produced no
+    /// output (helps users diagnose mic-too-quiet vs. speech-not-
+    /// recognised situations).
+    /// </summary>
+    public event EventHandler<string>? EmptyResult;
+
     public ContinuousDictationService(ITranscriptionEngine engine)
     {
         _engine = engine ?? throw new ArgumentNullException(nameof(engine));
@@ -208,6 +226,11 @@ public sealed class ContinuousDictationService : IDisposable
     {
         try
         {
+            // Announce the chunk is going out BEFORE the network call so
+            // the UI can show "Sending 1.2s of audio to Whisper..." right
+            // away. Without this, the user only sees a "Processing..."
+            // state with no indication of how much audio was captured.
+            ChunkSending?.Invoke(this, durationSec);
             StateChanged?.Invoke(this, "Processing...");
 
             var text = await _engine.TranscribeAsync(filePath);
@@ -219,11 +242,26 @@ public sealed class ContinuousDictationService : IDisposable
             // audio the moment the request succeeded.
             ChunkTranscribed?.Invoke(this, durationSec);
 
-            if (!string.IsNullOrWhiteSpace(text) &&
-                !text.StartsWith("[no speech") &&
-                !text.StartsWith("[recording too"))
+            var trimmed = text?.Trim() ?? "";
+            bool isEmpty = string.IsNullOrWhiteSpace(trimmed);
+            bool isNoSpeech = trimmed.StartsWith("[no speech", StringComparison.OrdinalIgnoreCase);
+            bool isTooShort = trimmed.StartsWith("[recording too", StringComparison.OrdinalIgnoreCase);
+
+            if (!isEmpty && !isNoSpeech && !isTooShort)
             {
-                TextReady?.Invoke(this, text);
+                TextReady?.Invoke(this, trimmed);
+            }
+            else
+            {
+                // Surface the empty / no-speech result so the UI can tell
+                // the user why their chunk produced no text instead of
+                // silently dropping it. The string passed back is either
+                // Whisper's literal marker text or a friendly summary.
+                var reason = isEmpty       ? "empty response"
+                           : isNoSpeech    ? "no speech detected"
+                           : isTooShort    ? "recording too short"
+                           : trimmed;
+                EmptyResult?.Invoke(this, reason);
             }
 
             StateChanged?.Invoke(this, "Listening");

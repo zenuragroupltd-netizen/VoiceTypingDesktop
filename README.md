@@ -16,13 +16,15 @@ handoff, and translate between 60+ languages — all from one place.
 ## Install (end user)
 
 1. Grab the latest `VoiceTypingDesktop-Setup-X.Y.Z.exe` from the
-   [Releases page](https://github.com/YOUR_USER/VoiceTypingDesktop/releases).
-2. Double-click it. The installer is self-contained — no .NET install needed.
+   [Releases page](https://github.com/zenuragroupltd-netizen/VoiceTypingDesktop/releases).
+2. Double-click it. The installer is self-contained — no .NET install needed
+   on the target PC. Bundled runtime + WPF + all dependencies ≈ 50 MB.
 3. Follow the wizard. Pick Start-Menu + desktop shortcut options if you want.
 4. Launch, go to **Voice Box → Settings**, paste your OpenAI API key,
    and start dictating.
 
-Windows 10/11, x64 only.
+Windows 10 build 17763+ / Windows 11, x64 only. Per-user install (no admin
+rights needed); each user account gets its own device ID and history.
 
 ## Develop / build from source
 
@@ -38,6 +40,15 @@ dotnet run
 # Build a signed-ready installer (produces VoiceTypingDesktop-Setup-X.Y.Z.exe)
 powershell -ExecutionPolicy Bypass -File Tools\package.ps1
 ```
+
+`package.ps1` does three things in order: regenerate the multi-resolution
+`app.ico`, publish a self-contained `win-x64` build into `Installer\Publish\`,
+then invoke Inno Setup (`ISCC.exe`) to wrap it as a Setup `.exe`.
+
+Between publish and Inno Setup the script runs a **secret-leak scan** over
+the publish folder (OpenAI keys, AWS keys, private-key blocks, etc.) and
+aborts if anything matches. The Supabase **anon** JWT in
+`appsettings.json` is intentionally allowed — it is designed to be public.
 
 ### Note on Windows Smart App Control
 

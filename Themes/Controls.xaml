@@ -269,10 +269,17 @@
         </Setter>
     </Style>
 
-    <!-- === Sidebar nav item (icon-only, centered) ===
-         Narrow rail design: no active accent bar, no left margin.
-         Selected state = soft accent background.
-         Hover state    = subtle surface lift. -->
+    <!-- === Sidebar nav item (icon-only, centered) — Phase 3 premium ===
+         Narrow 52-px rail. Three visual states on a single template:
+           • Rest       : transparent bg, TextPrimary foreground
+           • Hover      : NavHoverBg fill, Accent foreground
+           • Selected   : AccentSoft fill + 3-px tall accent pill on
+                          the LEFT edge, Accent foreground, soft glow
+         Icons in the ListBoxItem content bind their Fill to the
+         ListBoxItem's Foreground via RelativeSource, so they follow
+         the state transitions with no DataTriggers. A Storyboard on
+         the pill animates it in from Opacity=0 / Y-translated to
+         give a subtle slide-in on selection. -->
     <Style x:Key="NavListBoxItem" TargetType="ListBoxItem">
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -281,28 +288,96 @@
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="Bd"
-                            Background="Transparent"
-                            CornerRadius="10"
-                            Height="40"
-                            SnapsToDevicePixels="True">
+                    <Grid Height="40" SnapsToDevicePixels="True">
+                        <!-- Rounded surface that holds the selected / hover fill. -->
+                        <Border x:Name="Bd"
+                                Background="Transparent"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True" />
+
+                        <!-- Centered icon / content -->
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
-                    </Border>
+
+                        <!-- Left-edge accent pill — fades/slides in when IsSelected=true. -->
+                        <Border x:Name="Indicator"
+                                Width="3" Height="20"
+                                HorizontalAlignment="Left"
+                                CornerRadius="1.5"
+                                Background="{DynamicResource Accent}"
+                                Margin="-3,0,0,0"
+                                Opacity="0"
+                                RenderTransformOrigin="0,0.5">
+                            <Border.RenderTransform>
+                                <TranslateTransform x:Name="IndicatorSlide" X="-4" />
+                            </Border.RenderTransform>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#7C5CFF"
+                                                  Opacity="0.55"
+                                                  ShadowDepth="0"
+                                                  BlurRadius="6" />
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavHoverBg}" />
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{DynamicResource NavHoverBg}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavSelectedBg}" />
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{DynamicResource NavSelectedBg}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Indicator"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="1" Duration="0:0:0.18" />
+                                        <DoubleAnimation Storyboard.TargetName="IndicatorSlide"
+                                                         Storyboard.TargetProperty="X"
+                                                         To="0" Duration="0:0:0.22">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Indicator"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0" Duration="0:0:0.12" />
+                                        <DoubleAnimation Storyboard.TargetName="IndicatorSlide"
+                                                         Storyboard.TargetProperty="X"
+                                                         To="-4" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- === Sidebar nav icon Path === bind-helper for the Phase 3 rail.
+         Applying this style to the <Path> inside each ListBoxItem makes
+         the glyph's Fill follow the parent ListBoxItem's Foreground, so
+         rest/hover/selected colour transitions come "for free" from
+         NavListBoxItem's triggers. -->
+    <Style x:Key="NavIconPath" TargetType="Path">
+        <Setter Property="Fill"
+                Value="{Binding Foreground,
+                                RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
     </Style>
 
     <!-- === Card panel === -->
@@ -1502,6 +1577,220 @@
                 </Setter>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- ============================================================
+         Voice Box — Phase 2 styles (API key + Smart Tip cards)
+         ============================================================
+         Premium glassmorphic styles for the bottom panel of the
+         Voice Box page. Designed to keep the panel compact (so the
+         mic stays visible at MinHeight=720) while looking high-end.
+         ============================================================ -->
+
+    <!-- Premium API key card. White-to-lavender vertical gradient
+         surface, 22-px corners, soft purple shadow that lifts on
+         hover. Mirrors the hero card's material so the page feels
+         cohesive. -->
+    <Style x:Key="VbApiKeyCard" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#FFFFFF" Offset="0" />
+                    <GradientStop Color="#FAF8FF" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#6D4BFF"
+                                  Opacity="0.08"
+                                  BlurRadius="20"
+                                  ShadowDepth="0" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#6D4BFF"
+                                          Opacity="0.18"
+                                          BlurRadius="26"
+                                          ShadowDepth="0" />
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Premium API key TextBox. Rounded 14-px, 1.5-px border that
+         brightens to purple on focus + adds a soft purple aura.
+         Consolas to make the key feel like a credential. The control
+         template uses a Border wrapper around the default
+         PART_ContentHost so we can corner-radius the whole input. -->
+    <Style x:Key="VbApiKeyInput" TargetType="TextBox">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="Background" Value="{DynamicResource BgSurface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1.5" />
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource AccentMid}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="Center"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush"
+                                    Value="{DynamicResource AccentMid}" />
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush"
+                                    Value="{DynamicResource Accent}" />
+                            <Setter TargetName="Bd" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#7C5CFF"
+                                                      Opacity="0.25"
+                                                      ShadowDepth="0"
+                                                      BlurRadius="10" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Premium Save button. 36-px pill, purple gradient, soft
+         outer glow, scale-down on press for a tactile feel. -->
+    <Style x:Key="VbApiKeySaveButton" TargetType="Button">
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Padding" Value="20,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="BtnScale" ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+                        <Border x:Name="Bd"
+                                CornerRadius="14"
+                                SnapsToDevicePixels="True">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#9A82FF" Offset="0" />
+                                    <GradientStop Color="#7C5CFF" Offset="0.5" />
+                                    <GradientStop Color="#5B3FD1" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#7C5CFF"
+                                                  Opacity="0.40"
+                                                  BlurRadius="16"
+                                                  ShadowDepth="0" />
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="BtnScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         To="1.03" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetName="BtnScale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         To="1.03" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="BtnScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         To="1" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetName="BtnScale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         To="1" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.92" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.55" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Smart-Tip card. AccentSoft tinted glass with a subtle
+         purple border and shadow. Holds an icon + tip text and
+         optional secondary line. Compact (matches API key card
+         height) so the bottom panel stays one row tall. -->
+    <Style x:Key="VbSmartTipCard" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentMid}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="22" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#F5F1FF" Offset="0" />
+                    <GradientStop Color="#EBE3FF" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#7C5CFF"
+                                  Opacity="0.10"
+                                  BlurRadius="20"
+                                  ShadowDepth="0" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- ============================================================

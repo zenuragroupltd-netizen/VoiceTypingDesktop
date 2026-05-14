@@ -33,7 +33,7 @@ public sealed class WhisperApiEngine : ITranscriptionEngine
     /// models, on par with whisper-1 price-wise ($0.006/min) but much
     /// better output quality. Default for this app.
     /// </summary>
-    public const string DefaultModel = "gpt-4o-transcribe";
+    public const string DefaultModel = "whisper-1";
 
     /// <summary>
     /// Approximate per-minute audio input rate in USD, used by the UI to

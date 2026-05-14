@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using VoiceTypingDesktop.Services;
 using VoiceTypingDesktop.Services.Recording;
 
@@ -261,6 +262,25 @@ public partial class MainWindow
         UpdateMicVisualState(on: false);
         UpdateStatusMessages();
         RefreshUsageText();
+        RotateSmartTip();
+    }
+
+    // -----------------------------------------------------------------
+    // "How it works" pill — shows a short workflow explainer.
+    // -----------------------------------------------------------------
+    private void VbHowItWorks_Click(object sender, RoutedEventArgs e)
+    {
+        const string body =
+            "1.  Add your OpenAI API key below (it's stored locally).\n" +
+            "2.  Click the mic, then click into any app where you want text to appear (e.g. Word, browser, chat).\n" +
+            "3.  Speak naturally — short pauses end each chunk and trigger transcription.\n" +
+            "4.  Recognised text is typed into the active window via simulated keystrokes (no clipboard required).\n\n" +
+            "Tips:\n" +
+            "•  Pick the spoken language above for more accurate transcription.\n" +
+            "•  Click the mic again to stop. Session usage and cost appear under the mic.";
+
+        MessageBox.Show(this, body, "How Voice Typing works",
+            MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     // -----------------------------------------------------------------
@@ -308,13 +328,40 @@ public partial class MainWindow
             _dictation.StateChanged += (_, state) =>
                 Dispatcher.Invoke(() => OnDictationStateChanged(state));
             _dictation.ErrorOccurred += (_, err) =>
-                Dispatcher.Invoke(() => StatusBarText.Text = "Voice error: " + err);
+                Dispatcher.Invoke(() =>
+                {
+                    VbSubStatusText.Text = "Whisper error — " + err;
+                    StatusBarText.Text = "Voice error: " + err;
+                });
             _dictation.ChunkTranscribed += (_, durationSec) =>
                 Dispatcher.Invoke(() =>
                 {
                     _sessionAudioSec += durationSec;
                     RefreshUsageText();
                 });
+            _dictation.ChunkSending += (_, durationSec) =>
+                Dispatcher.Invoke(() =>
+                {
+                    // Tells the user "yes, your speech was captured —
+                    // we're sending it to Whisper now". Critical for
+                    // diagnosing the silent-failure pattern where chunks
+                    // would never make it past the dictation service.
+                    VbSubStatusText.Text =
+                        $"Sending {durationSec:0.0}s of audio to Whisper…";
+                });
+            _dictation.EmptyResult += (_, reason) =>
+                Dispatcher.Invoke(() =>
+                {
+                    // Whisper accepted the audio but returned nothing.
+                    // Most common causes: mic gain too low, speaking off-
+                    // axis, or noise without speech. Surface the reason
+                    // so the user can adjust instead of staring at a
+                    // frozen "Listening…" label forever.
+                    VbSubStatusText.Text = "Whisper returned: " + reason +
+                                           " — speak louder or closer to the mic.";
+                });
+            _dictation.PeakLevelChanged += (_, peak) =>
+                Dispatcher.Invoke(() => UpdatePeakMeter(peak));
             _dictation.AutoStopped += (_, _) =>
                 Dispatcher.Invoke(() =>
                 {
@@ -322,6 +369,7 @@ public partial class MainWindow
                     _dictation?.Dispose();
                     _dictation = null;
                     UpdateMicVisualState(on: false);
+                    HidePeakMeter();
                     VbStatusText.Text = "Mic auto-stopped (8s silence)";
                     VbStatusText.Foreground = (Brush)FindResource("TextSecondary");
                     UpdateStatusMessages();
@@ -332,6 +380,7 @@ public partial class MainWindow
 
             _dictation.Start();
             UpdateMicVisualState(on: true);
+            ShowPeakMeter();
             VbStatusText.Text = "Listening…";
             VbStatusText.Foreground = (Brush)FindResource("Danger");
             VbSubStatusText.Text = "Speak now. Text goes to your active app.";
@@ -380,6 +429,7 @@ public partial class MainWindow
         _dictation = null;
 
         UpdateMicVisualState(on: false);
+        HidePeakMeter();
         VbStatusText.Text = "Tap the mic to start";
         VbStatusText.Foreground = (Brush)FindResource("TextSecondary");
         UpdateStatusMessages();
@@ -508,39 +558,159 @@ public partial class MainWindow
     }
 
     // -----------------------------------------------------------------
+    // Peak audio meter (visual diagnostic — shows the user that the
+    // microphone is actually capturing sound while the mic is on).
+    //
+    // The hero card has two Borders for this:
+    //   VbPeakMeterTrack — the 220×5 px capsule background.
+    //   VbPeakMeterFill  — the inner purple-gradient fill that grows
+    //                      with the most recent peak level (0..1).
+    //
+    // While the wave bars are a stylised equaliser (random keyframes),
+    // the peak meter is the LITERAL signal — if it stays flat-zero
+    // while the user speaks, the OS-level audio path is broken (wrong
+    // default mic, muted, no permission, etc.) and no amount of UI
+    // polish will fix it. Keeping this meter wired is what makes the
+    // app debuggable for end users.
+    // -----------------------------------------------------------------
+
+    /// <summary>Track width in DIPs — kept in sync with the XAML so
+    /// width-mapping math doesn't drift if the meter is later resized.</summary>
+    private const double PeakMeterWidth = 220;
+
+    /// <summary>
+    /// Smoothed peak level (0..1) — exponential decay so the bar doesn't
+    /// flicker between every audio buffer. Higher peaks update instantly
+    /// (attack=1.0); lower peaks fade out over ~150 ms (release=0.85).
+    /// </summary>
+    private double _smoothedPeak;
+
+    private void ShowPeakMeter()
+    {
+        if (VbPeakMeterTrack != null)
+            VbPeakMeterTrack.Visibility = Visibility.Visible;
+        _smoothedPeak = 0;
+        if (VbPeakMeterFill != null)
+            VbPeakMeterFill.Width = 0;
+    }
+
+    private void HidePeakMeter()
+    {
+        if (VbPeakMeterTrack != null)
+            VbPeakMeterTrack.Visibility = Visibility.Collapsed;
+        if (VbPeakMeterFill != null)
+            VbPeakMeterFill.Width = 0;
+        _smoothedPeak = 0;
+    }
+
+    private void UpdatePeakMeter(float peak)
+    {
+        if (VbPeakMeterFill == null) return;
+
+        // Clamp + smooth. Most consumer mics live in the 0.05–0.4 range
+        // for normal speech, so we square-root the input to push quiet
+        // speech further up the bar (perceptual loudness curve, like
+        // a VU meter) without saturating on loud speech.
+        var clamped = Math.Max(0, Math.Min(1, peak));
+        var perceived = Math.Sqrt(clamped);
+
+        if (perceived > _smoothedPeak)
+            _smoothedPeak = perceived;
+        else
+            _smoothedPeak = _smoothedPeak * 0.85 + perceived * 0.15;
+
+        VbPeakMeterFill.Width = _smoothedPeak * PeakMeterWidth;
+    }
+
+    // -----------------------------------------------------------------
     // Mic visual state (pulse animation + glow)
     // -----------------------------------------------------------------
     private void UpdateMicVisualState(bool on)
     {
-        // The Stop button is only useful while the mic is actively
-        // listening — hide it otherwise so the mic stays visually
-        // centred in the card.
-        if (VbStopButton != null)
-            VbStopButton.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+        // Show/hide wave bars
+        if (VbWaveBars != null)
+            VbWaveBars.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+
+        // Phase 3 — reflect mic state in the bottom status bar pill so
+        // the user sees "Listening" even on other pages (pills are
+        // visible shell-wide).
+        UpdateStatusBarMicPill(on);
 
         if (_pulseStoryboard == null) return;
 
         if (on)
         {
             _pulseStoryboard.Begin(this, isControllable: true);
+            StartWaveAnimation();
         }
         else
         {
             try { _pulseStoryboard.Stop(this); } catch { /* ignore */ }
             VbPulseRing1.Opacity = 0;
             VbPulseRing2.Opacity = 0;
+            StopWaveAnimation();
         }
     }
 
-    /// <summary>
-    /// Explicit "Stop" button next to the mic — gives the user a clearly
-    /// labelled way to end dictation without having to click the mic
-    /// itself a second time.
-    /// </summary>
-    private void VbStop_Click(object sender, RoutedEventArgs e)
+    // Sync the status-bar mic pill with the dictation state.
+    // Red dot + "Mic: Listening" while recording, muted otherwise.
+    private void UpdateStatusBarMicPill(bool on)
     {
-        if (_dictation == null || !_dictation.IsListening) return;
-        StopMic();
+        if (StatusBarMicDot == null || StatusBarMicText == null) return;
+
+        if (on)
+        {
+            StatusBarMicDot.Fill = (Brush)FindResource("Danger");
+            StatusBarMicText.Text = "Mic: Listening";
+            StatusBarMicText.Foreground = (Brush)FindResource("Danger");
+        }
+        else
+        {
+            StatusBarMicDot.Fill = (Brush)FindResource("TextMuted");
+            StatusBarMicText.Text = "Mic: Idle";
+            StatusBarMicText.Foreground = (Brush)FindResource("TextSecondary");
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Wave bar animation (equalizer-style bouncing bars)
+    // -----------------------------------------------------------------
+    private Storyboard? _waveStoryboard;
+
+    private void StartWaveAnimation()
+    {
+        if (_waveStoryboard != null) { try { _waveStoryboard.Stop(this); } catch { } }
+
+        _waveStoryboard = new Storyboard { RepeatBehavior = RepeatBehavior.Forever };
+
+        var bars = new[] { WaveBar1, WaveBar2, WaveBar3, WaveBar4, WaveBar5, WaveBar6, WaveBar7 };
+        var delays = new[] { 0, 120, 240, 80, 200, 320, 160 };
+        var rng = new Random();
+
+        for (int i = 0; i < bars.Length; i++)
+        {
+            var anim = new DoubleAnimationUsingKeyFrames
+            {
+                BeginTime = TimeSpan.FromMilliseconds(delays[i])
+            };
+            var low = 0.2 + rng.NextDouble() * 0.2;
+            var high = 0.7 + rng.NextDouble() * 0.3;
+            anim.KeyFrames.Add(new LinearDoubleKeyFrame(low, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+            anim.KeyFrames.Add(new LinearDoubleKeyFrame(high, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(300))));
+            anim.KeyFrames.Add(new LinearDoubleKeyFrame(low, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(600))));
+
+            Storyboard.SetTarget(anim, bars[i]);
+            Storyboard.SetTargetProperty(anim, new PropertyPath(ScaleTransform.ScaleYProperty));
+            _waveStoryboard.Children.Add(anim);
+        }
+
+        _waveStoryboard.Begin(this, isControllable: true);
+    }
+
+    private void StopWaveAnimation()
+    {
+        try { _waveStoryboard?.Stop(this); } catch { /* ignore */ }
+        _waveStoryboard = null;
     }
 
     /// <summary>
@@ -684,5 +854,42 @@ public partial class MainWindow
         VbHotkeyBox.Text = ok
             ? binding.DisplayText
             : binding.DisplayText + "  (in use)";
+    }
+
+    // -----------------------------------------------------------------
+    // API key hyperlink — opens the OpenAI key page in the default browser
+    // -----------------------------------------------------------------
+    private void VbApiKeyLink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = e.Uri.AbsoluteUri,
+                UseShellExecute = true
+            });
+        }
+        catch { /* swallow — the user can copy the URL from the hint */ }
+        e.Handled = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Smart Tip card — picks a random copy line on each open. Kept
+    // intentionally short so the card stays compact at MinHeight=720.
+    // -----------------------------------------------------------------
+    private static readonly string[] _smartTips =
+    {
+        "Whisper costs about $0.006 per minute. Pick the spoken language above for higher accuracy.",
+        "Speak naturally — short pauses end each chunk and trigger transcription.",
+        "Click into your target app first (Word, browser, chat), then start the mic.",
+        "Set a global hotkey in Settings to toggle the mic without leaving your work.",
+        "For best results, use a quiet room and a headset mic about a hand's width away."
+    };
+
+    private void RotateSmartTip()
+    {
+        if (VbSmartTipText == null) return;
+        var idx = Random.Shared.Next(_smartTips.Length);
+        VbSmartTipText.Text = _smartTips[idx];
     }
 }

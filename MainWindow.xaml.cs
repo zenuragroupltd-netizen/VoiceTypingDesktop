@@ -286,6 +286,63 @@ public partial class MainWindow : Window
 
         // ---- About: feature card 2-col ⇄ 1-col + profile stacking ----
         ApplyAboutLayout(compact);
+
+        // ---- Voice Box: bottom panel (API key | Smart Tip) stacks
+        //      vertically at narrow widths so the cards keep comfortable
+        //      minimum widths instead of shrinking into a cramped row.
+        ApplyVoiceBoxBottomPanelLayout(compact);
+    }
+
+    // Flip VbBottomPanelGrid between a 2-col × 1-row band (wide) and a
+    // 1-col × 2-row stack (compact). At compact widths the Smart-Tip
+    // card also gets a top margin so it breathes away from the API key
+    // card instead of sitting flush.
+    private void ApplyVoiceBoxBottomPanelLayout(bool compact)
+    {
+        if (VbBottomPanelGrid == null
+            || VbApiKeyCardBorder == null
+            || VbSmartTipCardBorder == null)
+            return;
+
+        VbBottomPanelGrid.ColumnDefinitions.Clear();
+        VbBottomPanelGrid.RowDefinitions.Clear();
+
+        if (compact)
+        {
+            // Stack: single column, two rows.
+            VbBottomPanelGrid.ColumnDefinitions.Add(
+                new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            VbBottomPanelGrid.RowDefinitions.Add(
+                new RowDefinition { Height = GridLength.Auto });
+            VbBottomPanelGrid.RowDefinitions.Add(
+                new RowDefinition { Height = GridLength.Auto });
+
+            Grid.SetRow(VbApiKeyCardBorder, 0);
+            Grid.SetColumn(VbApiKeyCardBorder, 0);
+            VbApiKeyCardBorder.Margin = new Thickness(0);
+
+            Grid.SetRow(VbSmartTipCardBorder, 1);
+            Grid.SetColumn(VbSmartTipCardBorder, 0);
+            VbSmartTipCardBorder.Margin = new Thickness(0, 10, 0, 0);
+        }
+        else
+        {
+            // Side-by-side: two columns (3*/2*), single row.
+            VbBottomPanelGrid.ColumnDefinitions.Add(
+                new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });
+            VbBottomPanelGrid.ColumnDefinitions.Add(
+                new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
+            VbBottomPanelGrid.RowDefinitions.Add(
+                new RowDefinition { Height = GridLength.Auto });
+
+            Grid.SetRow(VbApiKeyCardBorder, 0);
+            Grid.SetColumn(VbApiKeyCardBorder, 0);
+            VbApiKeyCardBorder.Margin = new Thickness(0);
+
+            Grid.SetRow(VbSmartTipCardBorder, 0);
+            Grid.SetColumn(VbSmartTipCardBorder, 1);
+            VbSmartTipCardBorder.Margin = new Thickness(12, 0, 0, 0);
+        }
     }
 
     // Flip the About-page feature grid between 2 columns and 1 column,
@@ -464,6 +521,12 @@ public partial class MainWindow : Window
         // so transcribed text can be pasted into THAT window and not into
         // our own app.
         ForegroundWindowTracker.Start();
+
+        // Show the real assembly version in the Phase 3 status bar pill
+        // instead of the hard-coded "v1.0". Uses GetAppVersion() from
+        // MainWindow.About.cs (same partial class).
+        if (StatusBarVersion != null)
+            StatusBarVersion.Text = "v" + GetAppVersion();
 
         // System tray icon: keeps the app alive after the user closes the
         // window, and gives them quick mic toggle access.
@@ -784,6 +847,19 @@ public partial class MainWindow : Window
     private void OpenPlayStore_Click(object sender, RoutedEventArgs e)
     {
         OpenUrl(PlayStoreUrl);
+    }
+
+    /// <summary>
+    /// Direct APK download link. Users who can't access the Play Store
+    /// (Huawei, China, sideload preference) can grab the APK from here.
+    /// Replace with your actual hosted APK URL when ready.
+    /// </summary>
+    private const string ApkDownloadUrl =
+        "https://github.com/zenuragroupltd-netizen/VoiceTypingDesktop/releases";
+
+    private void DownloadApk_Click(object sender, RoutedEventArgs e)
+    {
+        OpenUrl(ApkDownloadUrl);
     }
 
     private void WhatsAppBtn_Click(object sender, RoutedEventArgs e)

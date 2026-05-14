@@ -32,7 +32,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="38" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="26" />
+                <RowDefinition Height="32" />
             </Grid.RowDefinitions>
 
             <!-- ============================ TITLE BAR ============================ -->
@@ -263,66 +263,101 @@
                                         <StackPanel Grid.Column="1" Margin="16,0,0,0"
                                                     VerticalAlignment="Center">
 
-                                            <!-- Play Store CTA — lets the user install the
-                                                 companion mobile app straight from here.
-                                                 Replace PlayStoreUrl in MainWindow.xaml.cs
-                                                 with the real store listing when published. -->
-                                            <Button Style="{StaticResource PlayStoreButton}"
-                                                    Click="OpenPlayStore_Click"
-                                                    ToolTip="Install Voice Typing on Android from the Play Store"
-                                                    HorizontalAlignment="Left"
-                                                    Margin="0,0,0,14">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <!-- Official Google Play 2022 icon.
-                                                         Path data copied verbatim from the
-                                                         Wikimedia Commons public-domain SVG
-                                                         (viewBox 0 0 28.99 31.99, four
-                                                         paths, Google brand hex colours).
-                                                         https://commons.wikimedia.org/wiki/File:Google_Play_2022_icon.svg -->
-                                                    <Border Grid.Column="0"
-                                                            Width="34" Height="34"
-                                                            CornerRadius="9"
-                                                            Background="White"
-                                                            VerticalAlignment="Center">
-                                                        <Viewbox Width="20" Height="22"
-                                                                 Stretch="Uniform"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Center">
-                                                            <Canvas Width="28.99" Height="31.99">
-                                                                <!-- Red face -->
-                                                                <Path Fill="#EA4335"
-                                                                      Data="M13.54 15.28 L0.12 29.34 A3.66 3.66 0 0 0 5.45 31.5 L20.55 22.9 Z" />
-                                                                <!-- Yellow face -->
-                                                                <Path Fill="#FBBC04"
-                                                                      Data="M27.11 12.89 L20.58 9.15 L13.23 15.60 L20.61 22.88 L27.09 19.18 A3.54 3.54 0 0 0 28.59 14.39 A3.62 3.62 0 0 0 27.09 12.89 Z" />
-                                                                <!-- Blue face -->
-                                                                <Path Fill="#4285F4"
-                                                                      Data="M0.12 2.66 A3.57 3.57 0 0 0 0 3.58 L0 28.42 A3.57 3.57 0 0 0 0.12 29.34 L14 15.64 Z" />
-                                                                <!-- Green face -->
-                                                                <Path Fill="#34A853"
-                                                                      Data="M13.64 16 L20.58 9.15 L5.5 0.51 A3.73 3.73 0 0 0 3.63 0 A3.64 3.64 0 0 0 0.12 2.65 Z" />
-                                                            </Canvas>
-                                                        </Viewbox>
-                                                    </Border>
-
-                                                    <StackPanel Grid.Column="1" Margin="10,0,12,0"
+                                            <!-- App install buttons row -->
+                                            <StackPanel Orientation="Horizontal"
+                                                        Margin="0,0,0,14">
+                                                <!-- Play Store CTA -->
+                                                <Button Style="{StaticResource PlayStoreButton}"
+                                                        Click="OpenPlayStore_Click"
+                                                        ToolTip="Install from Google Play Store"
+                                                        Margin="0,0,10,0">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0"
+                                                                Width="34" Height="34"
+                                                                CornerRadius="9"
+                                                                Background="White"
                                                                 VerticalAlignment="Center">
-                                                        <TextBlock Text="GET IT ON"
-                                                                   FontSize="8.5"
-                                                                   FontWeight="SemiBold"
-                                                                   Foreground="#BDB8FF" />
-                                                        <TextBlock Text="Google Play"
-                                                                   FontSize="13.5"
-                                                                   FontWeight="Bold"
-                                                                   Foreground="White"
-                                                                   Margin="0,-1,0,0" />
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Button>
+                                                            <Viewbox Width="20" Height="22"
+                                                                     Stretch="Uniform"
+                                                                     HorizontalAlignment="Center"
+                                                                     VerticalAlignment="Center">
+                                                                <Canvas Width="28.99" Height="31.99">
+                                                                    <Path Fill="#EA4335"
+                                                                          Data="M13.54 15.28 L0.12 29.34 A3.66 3.66 0 0 0 5.45 31.5 L20.55 22.9 Z" />
+                                                                    <Path Fill="#FBBC04"
+                                                                          Data="M27.11 12.89 L20.58 9.15 L13.23 15.60 L20.61 22.88 L27.09 19.18 A3.54 3.54 0 0 0 28.59 14.39 A3.62 3.62 0 0 0 27.09 12.89 Z" />
+                                                                    <Path Fill="#4285F4"
+                                                                          Data="M0.12 2.66 A3.57 3.57 0 0 0 0 3.58 L0 28.42 A3.57 3.57 0 0 0 0.12 29.34 L14 15.64 Z" />
+                                                                    <Path Fill="#34A853"
+                                                                          Data="M13.64 16 L20.58 9.15 L5.5 0.51 A3.73 3.73 0 0 0 3.63 0 A3.64 3.64 0 0 0 0.12 2.65 Z" />
+                                                                </Canvas>
+                                                            </Viewbox>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" Margin="10,0,12,0"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="GET IT ON"
+                                                                       FontSize="8.5"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="#BDB8FF" />
+                                                            <TextBlock Text="Google Play"
+                                                                       FontSize="13.5"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="White"
+                                                                       Margin="0,-1,0,0" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Button>
+
+                                                <!-- Direct APK download CTA -->
+                                                <Button Style="{StaticResource PlayStoreButton}"
+                                                        Click="DownloadApk_Click"
+                                                        ToolTip="Download APK directly (no Play Store needed)">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <!-- Download arrow icon badge -->
+                                                        <Border Grid.Column="0"
+                                                                Width="34" Height="34"
+                                                                CornerRadius="9"
+                                                                Background="White"
+                                                                VerticalAlignment="Center">
+                                                            <Viewbox Width="18" Height="18"
+                                                                     HorizontalAlignment="Center"
+                                                                     VerticalAlignment="Center">
+                                                                <Canvas Width="24" Height="24">
+                                                                    <!-- Android robot head (simplified) -->
+                                                                    <Path Fill="#3DDC84"
+                                                                          Data="M6,10 L6,17 C6,17.55 6.45,18 7,18 L8,18 L8,21 C8,21.55 8.45,22 9,22 C9.55,22 10,21.55 10,21 L10,18 L14,18 L14,21 C14,21.55 14.45,22 15,22 C15.55,22 16,21.55 16,21 L16,18 L17,18 C17.55,18 18,17.55 18,17 L18,10 Z" />
+                                                                    <Path Fill="#3DDC84"
+                                                                          Data="M4,10 C3.45,10 3,10.45 3,11 L3,15 C3,15.55 3.45,16 4,16 C4.55,16 5,15.55 5,15 L5,11 C5,10.45 4.55,10 4,10 Z M20,10 C19.45,10 19,10.45 19,11 L19,15 C19,15.55 19.45,16 20,16 C20.55,16 21,15.55 21,15 L21,11 C21,10.45 20.55,10 20,10 Z" />
+                                                                    <Path Fill="#3DDC84"
+                                                                          Data="M7,4.5 L7,9 L17,9 L17,4.5 C17,2.57 15.43,1 13.5,1 L10.5,1 C8.57,1 7,2.57 7,4.5 Z" />
+                                                                    <Ellipse Canvas.Left="9" Canvas.Top="3" Width="2" Height="2" Fill="White" />
+                                                                    <Ellipse Canvas.Left="13" Canvas.Top="3" Width="2" Height="2" Fill="White" />
+                                                                </Canvas>
+                                                            </Viewbox>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" Margin="10,0,12,0"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="DOWNLOAD"
+                                                                       FontSize="8.5"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="#BDB8FF" />
+                                                            <TextBlock Text="APK File"
+                                                                       FontSize="13.5"
+                                                                       FontWeight="Bold"
+                                                                       Foreground="White"
+                                                                       Margin="0,-1,0,0" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Button>
+                                            </StackPanel>
 
                                             <TextBlock Text="HOW TO PAIR"
                                                        FontSize="9.5" FontWeight="SemiBold"
@@ -593,13 +628,17 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- Heading + language picker.
-                             Row/Column of VbLangSection is reassigned at
-                             runtime by ApplyResponsiveLayout: at >=650px
-                             window width the picker sits top-right
-                             (Row 0, Col 1); below 650px it drops to a
-                             new full-width row underneath the title. -->
-                        <Grid x:Name="VbHeadingGrid" Grid.Row="0" Margin="0,0,0,14">
+                        <!-- ============ ROW 0 — HEADER ============
+                             Three logical pieces, two grid rows:
+                               Row 0 col 0: Title + subtitle
+                               Row 0 col 1: "How it works" floating pill
+                               Row 1 colspan 2: Language picker strip
+                             ApplyResponsiveLayout (.xaml.cs) no longer moves
+                             VbLangSection between rows — the picker now lives
+                             permanently on its own row so the pill can keep
+                             the top-right slot. The responsive code only
+                             toggles HorizontalAlignment / Margin now. -->
+                        <Grid x:Name="VbHeadingGrid" Grid.Row="0" Margin="0,0,0,16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
@@ -609,31 +648,101 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
+                            <!-- Title block -->
                             <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="Desktop Voice Box" FontSize="19" FontWeight="SemiBold"
+                                <TextBlock Text="Desktop Voice Box"
+                                           FontSize="26"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimary}"
                                            TextTrimming="CharacterEllipsis" />
                                 <TextBlock Text="Click the mic, speak, and text appears in your active app."
+                                           FontSize="13"
                                            Foreground="{DynamicResource TextSecondary}"
-                                           FontSize="12" Margin="0,2,0,0"
+                                           Margin="0,4,0,0"
                                            TextWrapping="Wrap" />
                             </StackPanel>
 
-                            <!-- Language picker: small section label + rounded pill -->
+                            <!-- "How it works" pill — glass-style floating
+                                 button with a faint purple border, soft glow,
+                                 and AccentSoft hover fill. Opens an in-app
+                                 explainer popup. -->
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    x:Name="VbHowItWorksBtn"
+                                    Click="VbHowItWorks_Click"
+                                    Cursor="Hand"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Margin="14,0,0,0"
+                                    Background="{DynamicResource BgSurface}"
+                                    BorderThickness="0"
+                                    Padding="0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="PillBd"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{DynamicResource AccentMid}"
+                                                BorderThickness="1.5"
+                                                CornerRadius="999"
+                                                Padding="14,8">
+                                            <Border.Effect>
+                                                <DropShadowEffect Color="#7C5CFF"
+                                                                  Opacity="0.18"
+                                                                  ShadowDepth="0"
+                                                                  BlurRadius="14" />
+                                            </Border.Effect>
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- Info glyph -->
+                                                <Viewbox Width="14" Height="14"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,6,0">
+                                                    <Canvas Width="24" Height="24">
+                                                        <Path Data="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M13,17 L11,17 L11,11 L13,11 L13,17 Z M13,9 L11,9 L11,7 L13,7 L13,9 Z"
+                                                              Fill="{DynamicResource Accent}" />
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <TextBlock Text="How it works"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource Accent}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="PillBd" Property="Background"
+                                                        Value="{DynamicResource AccentSoft}" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="PillBd" Property="Background"
+                                                        Value="{DynamicResource AccentMid}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <!-- Language picker — always lives in row 1
+                                 (full-width strip beneath the title). The
+                                 responsive code only tweaks alignment /
+                                 margin now, not Grid.Row. -->
                             <StackPanel x:Name="VbLangSection"
-                                        Grid.Row="0" Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        HorizontalAlignment="Right">
+                                        Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                        Margin="0,14,0,0"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Center">
                                 <TextBlock Text="RECOGNITION LANGUAGE"
                                            FontSize="10"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextMuted}"
-                                           Margin="2,0,0,6" />
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,14,0" />
                                 <Border Background="{DynamicResource BgSurface}"
                                         BorderBrush="{DynamicResource Border}"
                                         BorderThickness="1"
                                         CornerRadius="16"
                                         Padding="2"
-                                        MinWidth="220">
+                                        MinWidth="260">
                                     <Border.Effect>
                                         <DropShadowEffect Color="#000000" Opacity="0.06"
                                                           ShadowDepth="0" BlurRadius="14" />
@@ -645,205 +754,549 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Centre: mic button with pulse rings -->
-                        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="0">
+                        <!-- ============ ROW 1 — HERO VOICE VISUALIZATION CARD ============
+                             Premium glass card hosting:
+                               • Background ambient glow (radial AccentSoft fade)
+                               • Floating status pill (top)
+                               • Symmetric waveform — 3 left bars + mic orb + 4 right bars
+                                 (existing WaveBar1..WaveBar7 ScaleTransforms drive
+                                  the equalizer storyboard from MainWindow.VoiceBox.cs)
+                               • Listening label + verbose sub-status
+                               • Live peak meter (functional diagnostic)
+                               • Session info row (Model · Session · $Cost)
+
+                             Existing x:Names preserved so all event handlers
+                             and animation storyboards continue to work
+                             without code changes:
+                               VbPulseRing1/2 (+ scale transforms),
+                               VbMicButton (+ Click=VbMic_Click),
+                               VbWaveBars + WaveBar1..WaveBar7,
+                               VbStatusText, VbSubStatusText, VbUsageText,
+                               VbPeakMeterTrack, VbPeakMeterFill -->
+                        <Border Grid.Row="1"
+                                CornerRadius="28"
+                                BorderBrush="{DynamicResource Border}"
+                                BorderThickness="1"
+                                ClipToBounds="True"
+                                Padding="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Color="#FFFFFF" Offset="0" />
+                                    <GradientStop Color="#FAF8FF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#7C5CFF" Opacity="0.10"
+                                                  ShadowDepth="0" BlurRadius="36" />
+                            </Border.Effect>
+
                             <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                                <!-- Background ambient radial glow — extremely
+                                     subtle purple fog centered behind the mic.
+                                     Cheap: just one ellipse with a radial
+                                     gradient brush. No blur shaders, no
+                                     particle engines. -->
+                                <Ellipse Width="520" Height="520"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         IsHitTestVisible="False">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush GradientOrigin="0.5,0.5"
+                                                             Center="0.5,0.5"
+                                                             RadiusX="0.5" RadiusY="0.5">
+                                            <GradientStop Color="#7C5CFF" Offset="0.0" />
+                                            <GradientStop Color="#7C5CFF" Offset="0.35" />
+                                            <GradientStop Color="#00FFFFFF" Offset="1.0" />
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.OpacityMask>
+                                        <RadialGradientBrush>
+                                            <GradientStop Color="Black" Offset="0" />
+                                            <GradientStop Color="Transparent" Offset="1" />
+                                        </RadialGradientBrush>
+                                    </Ellipse.OpacityMask>
+                                    <Ellipse.Opacity>0.06</Ellipse.Opacity>
+                                </Ellipse>
 
-                                <!-- Mic + Stop side-by-side. The Stop button is hidden
-                                     while idle, so the mic centres itself in the card. -->
-                                <StackPanel Grid.Row="0"
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            HorizontalAlignment="Center">
+                                <!-- Content grid: top status pill, center
+                                     mic+waveform composition, bottom info -->
+                                <Grid Margin="24,20,24,22">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" /> <!-- Status pill -->
+                                        <RowDefinition Height="*" />     <!-- Mic + waveform -->
+                                        <RowDefinition Height="Auto" /> <!-- Sub-status + meter + session info -->
+                                    </Grid.RowDefinitions>
 
-                                    <!-- Mic button area (pulse rings + mic) -->
-                                    <Grid>
-                                        <!-- Animated outer pulse ring -->
-                                        <Ellipse x:Name="VbPulseRing1"
-                                                 Width="220" Height="220"
-                                                 Fill="{DynamicResource AccentSoft}"
-                                                 Opacity="0">
-                                            <Ellipse.RenderTransform>
-                                                <ScaleTransform x:Name="VbPulseRing1Scale" CenterX="110" CenterY="110" ScaleX="1" ScaleY="1" />
-                                            </Ellipse.RenderTransform>
-                                            <Ellipse.RenderTransformOrigin>
-                                                <Point X="0.5" Y="0.5" />
-                                            </Ellipse.RenderTransformOrigin>
-                                        </Ellipse>
-                                        <Ellipse x:Name="VbPulseRing2"
-                                                 Width="170" Height="170"
-                                                 Fill="{DynamicResource AccentSoft}"
-                                                 Opacity="0">
-                                            <Ellipse.RenderTransform>
-                                                <ScaleTransform x:Name="VbPulseRing2Scale" CenterX="85" CenterY="85" ScaleX="1" ScaleY="1" />
-                                            </Ellipse.RenderTransform>
-                                            <Ellipse.RenderTransformOrigin>
-                                                <Point X="0.5" Y="0.5" />
-                                            </Ellipse.RenderTransformOrigin>
-                                        </Ellipse>
+                                    <!-- ============ STATUS PILL ============
+                                         A floating capsule with a colored dot
+                                         + status text. The dot color follows
+                                         VbStatusText.Foreground via binding,
+                                         so all the existing color setters in
+                                         StartMic / StopMic / OnDictation*
+                                         automatically tint the dot too —
+                                         no extra C# state machine needed. -->
+                                    <Border Grid.Row="0"
+                                            HorizontalAlignment="Center"
+                                            Background="{DynamicResource BgSurface}"
+                                            BorderBrush="{DynamicResource Border}"
+                                            BorderThickness="1"
+                                            CornerRadius="999"
+                                            Padding="16,8">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#000000"
+                                                              Opacity="0.07"
+                                                              ShadowDepth="0"
+                                                              BlurRadius="18" />
+                                        </Border.Effect>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Ellipse x:Name="VbStatusDot"
+                                                     Width="8" Height="8"
+                                                     VerticalAlignment="Center"
+                                                     Margin="0,0,9,0"
+                                                     Fill="{Binding ElementName=VbStatusText, Path=Foreground}">
+                                                <Ellipse.Effect>
+                                                    <DropShadowEffect Color="#7C5CFF"
+                                                                      Opacity="0.45"
+                                                                      ShadowDepth="0"
+                                                                      BlurRadius="6" />
+                                                </Ellipse.Effect>
+                                            </Ellipse>
+                                            <TextBlock x:Name="VbStatusText"
+                                                       Text="Tap the mic to start"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                        </StackPanel>
+                                    </Border>
 
-                                        <!-- Main mic button -->
-                                        <Button x:Name="VbMicButton"
-                                                Width="140" Height="140"
-                                                Cursor="Hand"
-                                                Click="VbMic_Click"
-                                                BorderThickness="0"
-                                                Background="Transparent">
-                                            <Button.Template>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Grid>
-                                                        <Ellipse x:Name="MicBg">
-                                                            <Ellipse.Fill>
-                                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                                    <GradientStop Color="#8A6CFF" Offset="0" />
-                                                                    <GradientStop Color="#5B3FD1" Offset="1" />
-                                                                </LinearGradientBrush>
-                                                            </Ellipse.Fill>
-                                                            <Ellipse.Effect>
-                                                                <DropShadowEffect ShadowDepth="0" BlurRadius="24"
-                                                                                  Color="#7C5CFF" Opacity="0.45" />
-                                                            </Ellipse.Effect>
-                                                        </Ellipse>
-                                                        <Viewbox Width="60" Height="60"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Center">
-                                                            <Canvas Width="24" Height="24">
-                                                                <Path Data="{StaticResource IconMic}"
-                                                                      Fill="White" />
-                                                            </Canvas>
-                                                        </Viewbox>
-                                                    </Grid>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="MicBg" Property="Opacity" Value="0.92" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Button.Template>
-                                        </Button>
+                                    <!-- ============ MIC + SYMMETRIC WAVEFORM ============
+                                         A horizontal composition: 3 left bars +
+                                         mic orb (with two concentric pulse rings) +
+                                         4 right bars. The ScaleTransform x:Names
+                                         WaveBar1..WaveBar7 are preserved because
+                                         StartWaveAnimation() in the code-behind
+                                         iterates them by name. -->
+                                    <Grid Grid.Row="1"
+                                          x:Name="VbWaveBars"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="0,8,0,8">
+                                        <StackPanel Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+
+                                            <!-- LEFT WAVEFORM (bars rise toward mic) -->
+                                            <Border Width="5" Height="22" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.55">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar1" ScaleY="0.35" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <Border Width="5" Height="42" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.7">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar2" ScaleY="0.5" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <Border Width="5" Height="64" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.85">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar3" ScaleY="0.8" />
+                                                </Border.RenderTransform>
+                                            </Border>
+
+                                            <!-- ============ MIC ORB ============
+                                                 Two pulse rings behind a 150 px
+                                                 gradient mic button. Reflection
+                                                 highlight on top-left for the
+                                                 "glass orb" feel. -->
+                                            <Grid Margin="14,0">
+                                                <!-- Outer pulse ring -->
+                                                <Ellipse x:Name="VbPulseRing1"
+                                                         Width="230" Height="230"
+                                                         Fill="{DynamicResource AccentSoft}"
+                                                         Opacity="0">
+                                                    <Ellipse.RenderTransform>
+                                                        <ScaleTransform x:Name="VbPulseRing1Scale"
+                                                                        CenterX="115" CenterY="115"
+                                                                        ScaleX="1" ScaleY="1" />
+                                                    </Ellipse.RenderTransform>
+                                                    <Ellipse.RenderTransformOrigin>
+                                                        <Point X="0.5" Y="0.5" />
+                                                    </Ellipse.RenderTransformOrigin>
+                                                </Ellipse>
+                                                <!-- Inner pulse ring -->
+                                                <Ellipse x:Name="VbPulseRing2"
+                                                         Width="180" Height="180"
+                                                         Fill="{DynamicResource AccentSoft}"
+                                                         Opacity="0">
+                                                    <Ellipse.RenderTransform>
+                                                        <ScaleTransform x:Name="VbPulseRing2Scale"
+                                                                        CenterX="90" CenterY="90"
+                                                                        ScaleX="1" ScaleY="1" />
+                                                    </Ellipse.RenderTransform>
+                                                    <Ellipse.RenderTransformOrigin>
+                                                        <Point X="0.5" Y="0.5" />
+                                                    </Ellipse.RenderTransformOrigin>
+                                                </Ellipse>
+
+                                                <!-- Mic button -->
+                                                <Button x:Name="VbMicButton"
+                                                        Width="150" Height="150"
+                                                        Cursor="Hand"
+                                                        Click="VbMic_Click"
+                                                        BorderThickness="0"
+                                                        Background="Transparent">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Grid x:Name="MicRoot"
+                                                                  RenderTransformOrigin="0.5,0.5">
+                                                                <Grid.RenderTransform>
+                                                                    <ScaleTransform x:Name="MicScale" ScaleX="1" ScaleY="1" />
+                                                                </Grid.RenderTransform>
+
+                                                                <!-- Deeper gradient orb with outer glow -->
+                                                                <Ellipse x:Name="MicBg">
+                                                                    <Ellipse.Fill>
+                                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                                            <GradientStop Color="#9A82FF" Offset="0" />
+                                                                            <GradientStop Color="#7C5CFF" Offset="0.5" />
+                                                                            <GradientStop Color="#4F2EE0" Offset="1" />
+                                                                        </LinearGradientBrush>
+                                                                    </Ellipse.Fill>
+                                                                    <Ellipse.Effect>
+                                                                        <DropShadowEffect ShadowDepth="0"
+                                                                                          BlurRadius="36"
+                                                                                          Color="#7C5CFF"
+                                                                                          Opacity="0.55" />
+                                                                    </Ellipse.Effect>
+                                                                </Ellipse>
+
+                                                                <!-- Glass reflection highlight (top-left arc) -->
+                                                                <Ellipse Width="120" Height="120"
+                                                                         HorizontalAlignment="Center"
+                                                                         VerticalAlignment="Center"
+                                                                         Margin="-12,-22,0,0"
+                                                                         IsHitTestVisible="False">
+                                                                    <Ellipse.Fill>
+                                                                        <RadialGradientBrush GradientOrigin="0.3,0.25"
+                                                                                             Center="0.3,0.25"
+                                                                                             RadiusX="0.55" RadiusY="0.55">
+                                                                            <GradientStop Color="#80FFFFFF" Offset="0.0" />
+                                                                            <GradientStop Color="#00FFFFFF" Offset="0.75" />
+                                                                        </RadialGradientBrush>
+                                                                    </Ellipse.Fill>
+                                                                </Ellipse>
+
+                                                                <!-- Mic glyph (white) -->
+                                                                <Viewbox Width="64" Height="64"
+                                                                         HorizontalAlignment="Center"
+                                                                         VerticalAlignment="Center">
+                                                                    <Canvas Width="24" Height="24">
+                                                                        <Path Data="{StaticResource IconMic}"
+                                                                              Fill="White" />
+                                                                    </Canvas>
+                                                                </Viewbox>
+                                                            </Grid>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Trigger.EnterActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <DoubleAnimation Storyboard.TargetName="MicScale"
+                                                                                                 Storyboard.TargetProperty="ScaleX"
+                                                                                                 To="1.04" Duration="0:0:0.18" />
+                                                                                <DoubleAnimation Storyboard.TargetName="MicScale"
+                                                                                                 Storyboard.TargetProperty="ScaleY"
+                                                                                                 To="1.04" Duration="0:0:0.18" />
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </Trigger.EnterActions>
+                                                                    <Trigger.ExitActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <DoubleAnimation Storyboard.TargetName="MicScale"
+                                                                                                 Storyboard.TargetProperty="ScaleX"
+                                                                                                 To="1.0" Duration="0:0:0.18" />
+                                                                                <DoubleAnimation Storyboard.TargetName="MicScale"
+                                                                                                 Storyboard.TargetProperty="ScaleY"
+                                                                                                 To="1.0" Duration="0:0:0.18" />
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </Trigger.ExitActions>
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter TargetName="MicBg" Property="Opacity" Value="0.9" />
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </Grid>
+
+                                            <!-- RIGHT WAVEFORM (bars fall away from mic) -->
+                                            <Border Width="5" Height="64" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.85">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar4" ScaleY="0.8" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <Border Width="5" Height="52" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.75">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar5" ScaleY="0.6" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <Border Width="5" Height="36" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.65">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar6" ScaleY="0.45" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                            <Border Width="5" Height="22" Margin="3,0" CornerRadius="3"
+                                                    Background="{DynamicResource Accent}"
+                                                    VerticalAlignment="Center"
+                                                    RenderTransformOrigin="0.5,0.5"
+                                                    Opacity="0.55">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform x:Name="WaveBar7" ScaleY="0.35" />
+                                                </Border.RenderTransform>
+                                            </Border>
+                                        </StackPanel>
                                     </Grid>
 
-                                    <!-- Stop button — visible only while mic is on -->
-                                    <Button x:Name="VbStopButton"
-                                            Width="64" Height="64"
-                                            Margin="32,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Cursor="Hand"
-                                            Visibility="Collapsed"
-                                            Click="VbStop_Click"
-                                            BorderThickness="0"
-                                            Background="Transparent"
-                                            ToolTip="Stop voice typing">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Grid>
-                                                    <Ellipse x:Name="StopBg">
-                                                        <Ellipse.Fill>
-                                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                                <GradientStop Color="#F2545B" Offset="0" />
-                                                                <GradientStop Color="#DC2626" Offset="1" />
-                                                            </LinearGradientBrush>
-                                                        </Ellipse.Fill>
-                                                        <Ellipse.Effect>
-                                                            <DropShadowEffect ShadowDepth="0" BlurRadius="18"
-                                                                              Color="#DC2626" Opacity="0.45" />
-                                                        </Ellipse.Effect>
-                                                    </Ellipse>
-                                                    <Rectangle Width="20" Height="20"
-                                                               RadiusX="3" RadiusY="3"
-                                                               Fill="White"
-                                                               HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center" />
-                                                </Grid>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="StopBg" Property="Opacity" Value="0.92" />
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                </StackPanel>
+                                    <!-- ============ BOTTOM STATUS STACK ============
+                                         Verbose pipeline status, live peak meter,
+                                         and session info row (Model · Time · Cost). -->
+                                    <StackPanel Grid.Row="2"
+                                                HorizontalAlignment="Center"
+                                                Margin="0,4,0,0">
 
-                                <!-- Status line below mic -->
-                                <StackPanel Grid.Row="1" Margin="0,8,0,24"
-                                            HorizontalAlignment="Center">
-                                    <TextBlock x:Name="VbStatusText"
-                                               Text="Tap the mic to start"
-                                               FontSize="13"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextSecondary}"
-                                               HorizontalAlignment="Center" />
-                                    <TextBlock x:Name="VbSubStatusText"
-                                               Text="Set your OpenAI API key below to enable Whisper"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,4,0,0" />
-                                    <TextBlock x:Name="VbUsageText"
-                                               Text=""
-                                               FontSize="10.5"
-                                               FontFamily="Consolas"
-                                               Foreground="{DynamicResource TextMuted}"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
+                                        <!-- Verbose sub-status (Sending Xs / Whisper returned: ...) -->
+                                        <TextBlock x:Name="VbSubStatusText"
+                                                   Text="Set your OpenAI API key below to enable Whisper"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   HorizontalAlignment="Center"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="420" />
+
+                                        <!-- Live peak meter — slim diagnostic
+                                             bar driven by PeakLevelChanged. Hidden
+                                             while mic is off (toggled in
+                                             ShowPeakMeter/HidePeakMeter). -->
+                                        <Border x:Name="VbPeakMeterTrack"
+                                                Height="5"
+                                                Width="220"
+                                                CornerRadius="3"
+                                                Background="{DynamicResource BgHover}"
+                                                Visibility="Collapsed"
+                                                Margin="0,10,0,0">
+                                            <Border x:Name="VbPeakMeterFill"
+                                                    CornerRadius="3"
+                                                    HorizontalAlignment="Left"
+                                                    Width="0">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#8A6CFF" Offset="0" />
+                                                        <GradientStop Color="#5B3FD1" Offset="1" />
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                        </Border>
+
+                                        <!-- Session info row — Model · Session · Cost
+                                             with small purple separator dots.
+                                             VbUsageText is the legacy single-line
+                                             usage string from RefreshUsageText();
+                                             kept as-is for now (Phase 4 will split
+                                             into three TextBlocks with proper
+                                             separators bound to live data). -->
+                                        <TextBlock x:Name="VbUsageText"
+                                                   Text=""
+                                                   FontSize="10.5"
+                                                   FontFamily="Consolas"
+                                                   Foreground="{DynamicResource TextMuted}"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,10,0,0" />
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                         </Border>
 
-                        <!-- Bottom panel: API key only (compact). The mic
-                             hotkey was moved to the Settings page so the
-                             mic itself stays visible at MinHeight=720. -->
-                        <Border Grid.Row="2" Style="{StaticResource Card}"
-                                Padding="12,10" Margin="0,10,0,0">
-                            <StackPanel>
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="OPENAI API KEY"
-                                               FontSize="9.5" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMuted}" />
-                                    <TextBlock Grid.Column="1"
-                                               x:Name="VbKeyStatusText"
-                                               Text="Not set"
-                                               FontSize="9.5"
-                                               Foreground="{DynamicResource Warning}" />
-                                </Grid>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="VbApiKeyBox"
-                                             Grid.Column="0"
-                                             MinHeight="30"
-                                             Padding="8,5"
-                                             FontSize="11.5"
-                                             FontFamily="Consolas"
-                                             VerticalContentAlignment="Center" />
-                                    <Button x:Name="VbSaveKeyBtn"
-                                            Grid.Column="1"
-                                            Style="{StaticResource PrimaryButton}"
-                                            Padding="12,4"
-                                            Margin="6,0,0,0"
-                                            Click="VbSaveKey_Click">
-                                        <TextBlock Text="Save" Foreground="White"
-                                                   FontWeight="SemiBold" FontSize="11.5" />
-                                    </Button>
-                                </Grid>
-                                <TextBlock Text="Stored locally. Get a key at platform.openai.com/api-keys"
-                                           FontSize="9.5"
-                                           Foreground="{DynamicResource TextMuted}"
-                                           Margin="0,5,0,0"
-                                           TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                        </Border>
+                        <!-- ============ ROW 2 — BOTTOM PANEL (Phase 2) ============
+                             Two compact glass cards side-by-side. The mic
+                             hotkey lives on the Settings page so this row
+                             stays one panel tall and the mic remains
+                             visible at MinHeight=720.
+
+                               • LEFT  (3*) — VbApiKeyCard
+                                 Lock-glyph label, status pill (state dot
+                                 bound to status text foreground), premium
+                                 rounded TextBox + gradient Save button,
+                                 storage hint line.
+                               • RIGHT (2*) — VbSmartTipCard
+                                 Lightbulb header + rotating tip line. Hint
+                                 text is set in code (RotateSmartTip in
+                                 MainWindow.VoiceBox.cs) so we can swap tips
+                                 without retouching XAML.
+
+                             Existing x:Names preserved so all save / status
+                             handlers continue to work without C# edits:
+                               VbApiKeyBox, VbSaveKeyBtn, VbKeyStatusText. -->
+                        <Grid x:Name="VbBottomPanelGrid"
+                              Grid.Row="2"
+                              Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- ============ LEFT — API KEY CARD ============ -->
+                            <Border x:Name="VbApiKeyCardBorder"
+                                    Grid.Column="0"
+                                    Style="{StaticResource VbApiKeyCard}">
+                                <StackPanel>
+
+                                    <!-- Top row: lock-glyph label + status pill -->
+                                    <Grid Margin="0,0,0,9">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Lock glyph + label -->
+                                        <StackPanel Grid.Column="0"
+                                                    Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
+                                            <Viewbox Width="14" Height="14"
+                                                     VerticalAlignment="Center"
+                                                     Margin="0,0,8,0">
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="M18,8 L17,8 L17,6 C17,3.24 14.76,1 12,1 C9.24,1 7,3.24 7,6 L7,8 L6,8 C4.9,8 4,8.9 4,10 L4,20 C4,21.1 4.9,22 6,22 L18,22 C19.1,22 20,21.1 20,20 L20,10 C20,8.9 19.1,8 18,8 Z M9,6 C9,4.34 10.34,3 12,3 C13.66,3 15,4.34 15,6 L15,8 L9,8 L9,6 Z M12,17 C10.9,17 10,16.1 10,15 C10,13.9 10.9,13 12,13 C13.1,13 14,13.9 14,15 C14,16.1 13.1,17 12,17 Z"
+                                                          Fill="{DynamicResource Accent}" />
+                                                </Canvas>
+                                            </Viewbox>
+                                            <TextBlock Text="OpenAI API Key"
+                                                       FontSize="12.5"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- Status pill — colored dot + label.
+                                             Dot Fill is bound to VbKeyStatusText.Foreground
+                                             so when UpdateKeyStatus() flips the text
+                                             color (Success / Warning), the dot
+                                             follows automatically. -->
+                                        <Border Grid.Column="2"
+                                                Background="{DynamicResource BgSurface}"
+                                                BorderBrush="{DynamicResource Border}"
+                                                BorderThickness="1"
+                                                CornerRadius="999"
+                                                Padding="10,3">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="6" Height="6"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,6,0"
+                                                         Fill="{Binding ElementName=VbKeyStatusText, Path=Foreground}" />
+                                                <TextBlock x:Name="VbKeyStatusText"
+                                                           Text="Not set"
+                                                           FontSize="10.5"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource Warning}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Input + save button row -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox x:Name="VbApiKeyBox"
+                                                 Grid.Column="0"
+                                                 Style="{StaticResource VbApiKeyInput}" />
+                                        <Button x:Name="VbSaveKeyBtn"
+                                                Grid.Column="1"
+                                                Style="{StaticResource VbApiKeySaveButton}"
+                                                Margin="10,0,0,0"
+                                                Click="VbSaveKey_Click"
+                                                Content="Save" />
+                                    </Grid>
+
+                                    <!-- Storage / link hint -->
+                                    <TextBlock FontSize="10.5"
+                                               Foreground="{DynamicResource TextMuted}"
+                                               Margin="2,8,0,0"
+                                               TextTrimming="CharacterEllipsis">
+                                        <Run Text="Stored locally on this PC. Get a key at " />
+                                        <Hyperlink NavigateUri="https://platform.openai.com/api-keys"
+                                                   RequestNavigate="VbApiKeyLink_RequestNavigate"
+                                                   Foreground="{DynamicResource Accent}"
+                                                   TextDecorations="None">platform.openai.com/api-keys</Hyperlink>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- ============ RIGHT — SMART TIP CARD ============ -->
+                            <Border x:Name="VbSmartTipCardBorder"
+                                    Grid.Column="1"
+                                    Style="{StaticResource VbSmartTipCard}"
+                                    Margin="12,0,0,0">
+                                <StackPanel VerticalAlignment="Center">
+
+                                    <!-- Header: lightbulb glyph + label -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                        <Viewbox Width="14" Height="14"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,7,0">
+                                            <Canvas Width="24" Height="24">
+                                                <Path Data="M9,21 C9,21.55 9.45,22 10,22 L14,22 C14.55,22 15,21.55 15,21 L15,20 L9,20 L9,21 Z M12,2 C8.14,2 5,5.14 5,9 C5,11.38 6.19,13.47 8,14.74 L8,17 C8,17.55 8.45,18 9,18 L15,18 C15.55,18 16,17.55 16,17 L16,14.74 C17.81,13.47 19,11.38 19,9 C19,5.14 15.86,2 12,2 Z"
+                                                      Fill="{DynamicResource Accent}" />
+                                            </Canvas>
+                                        </Viewbox>
+                                        <TextBlock Text="SMART TIP"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource Accent}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <!-- Rotating tip text. Default copy is a
+                                         cost line; MainWindow.VoiceBox.cs
+                                         picks a random tip on each open. -->
+                                    <TextBlock x:Name="VbSmartTipText"
+                                               Text="Whisper costs about $0.006 per minute. Pick the spoken language above for higher accuracy."
+                                               FontSize="11.5"
+                                               LineHeight="16"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Grid>
 
                     <!-- ====================================================== PAGE: TRANSLATOR (premium glassmorphism redesign) ======================================================
@@ -2051,7 +2504,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
                                     <Path Data="{StaticResource IconMobileSync}"
-                                          Fill="{DynamicResource TextPrimary}" />
+                                          Style="{StaticResource NavIconPath}" />
                                 </Viewbox>
                             </ListBoxItem>
                             <!-- Voice Box -->
@@ -2060,7 +2513,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
                                     <Path Data="{StaticResource IconMic}"
-                                          Fill="{DynamicResource TextPrimary}" />
+                                          Style="{StaticResource NavIconPath}" />
                                 </Viewbox>
                             </ListBoxItem>
                             <!-- Translator -->
@@ -2069,7 +2522,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
                                     <Path Data="{StaticResource IconTranslate}"
-                                          Fill="{DynamicResource TextPrimary}" />
+                                          Style="{StaticResource NavIconPath}" />
                                 </Viewbox>
                             </ListBoxItem>
                             <!-- Settings -->
@@ -2078,7 +2531,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
                                     <Path Data="{StaticResource IconSettings}"
-                                          Fill="{DynamicResource TextPrimary}" />
+                                          Style="{StaticResource NavIconPath}" />
                                 </Viewbox>
                             </ListBoxItem>
                             <!-- About -->
@@ -2087,7 +2540,7 @@
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
                                     <Path Data="{StaticResource IconInfo}"
-                                          Fill="{DynamicResource TextPrimary}" />
+                                          Style="{StaticResource NavIconPath}" />
                                 </Viewbox>
                             </ListBoxItem>
                         </ListBox>
@@ -2177,32 +2630,132 @@
                 </Border>
             </Grid>
 
-            <!-- ============================ STATUS BAR ============================ -->
-            <Border Grid.Row="2"
-                    Background="{DynamicResource BgSurface}"
-                    BorderBrush="{DynamicResource Border}"
-                    BorderThickness="0,1,0,0">
-                <Grid Margin="14,0">
+            <!-- ============ STATUS BAR (Phase 3) ============
+                 A slim 32-px glass strip at the bottom of the shell.
+                 Top edge uses a horizontal gradient border (purple left,
+                 fading to transparent right) instead of a flat grey rule
+                 so the bar reads as part of the premium shell. Host a
+                 few compact pills on the right:
+
+                   [StatusBarMicPill]   mic state (dot + label),
+                                        driven by VoiceBox UpdateMicVisualState
+                   [StatusBarModelPill] static "Whisper" model chip
+                   [StatusBarVersion]   rounded version badge
+
+                 Existing x:Names preserved so nothing breaks:
+                   StatusBarText, PinStatusLabel.
+                 New x:Names for the VoiceBox to update live:
+                   StatusBarMicDot, StatusBarMicText. -->
+            <Grid Grid.Row="2">
+                <!-- Glass surface with gradient top divider. The Border
+                     below holds the surface + shadow; a second Rectangle
+                     is stacked on top edge to render the gradient rule. -->
+                <Border Background="{DynamicResource BgSurface}" SnapsToDevicePixels="True">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#000000" Opacity="0.05"
+                                          ShadowDepth="-1" BlurRadius="6"
+                                          Direction="90" />
+                    </Border.Effect>
+                </Border>
+                <!-- Gradient top rule (1 px tall, hard-snapped). -->
+                <Rectangle Height="1" VerticalAlignment="Top" SnapsToDevicePixels="True">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#7C5CFF" Offset="0" />
+                            <GradientStop Color="#D6CCFF" Offset="0.5" />
+                            <GradientStop Color="#00000000" Offset="1" />
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                    <Rectangle.Opacity>0.55</Rectangle.Opacity>
+                </Rectangle>
+
+                <!-- Status bar content -->
+                <Grid Margin="16,0,12,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+
+                    <!-- LEFT — page status text -->
                     <TextBlock x:Name="StatusBarText" Text="Ready"
-                               Grid.Column="0" FontSize="11"
-                               Foreground="{DynamicResource TextMuted}"
-                               VerticalAlignment="Center" />
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                               Grid.Column="0" FontSize="11.5"
+                               Foreground="{DynamicResource TextSecondary}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+
+                    <!-- RIGHT — pills cluster -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                VerticalAlignment="Center">
+
+                        <!-- Pin/top status — shown when "always on top" is active.
+                             Kept text-only (no pill) because it's usually empty. -->
                         <TextBlock x:Name="PinStatusLabel" Text=""
                                    FontSize="11"
+                                   FontWeight="SemiBold"
                                    Foreground="{DynamicResource Accent}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,12,0" />
-                        <TextBlock Text="v1.0" FontSize="11"
-                                   Foreground="{DynamicResource TextMuted}"
-                                   VerticalAlignment="Center" />
+                                   Margin="0,0,10,0" />
+
+                        <!-- Mic state pill — dot + label.
+                             Default: "Mic: Idle" in TextMuted.
+                             VoiceBox UpdateMicVisualState flips this to
+                             "Mic: Listening" in red while the mic is on. -->
+                        <Border x:Name="StatusBarMicPill"
+                                Background="{DynamicResource BgHover}"
+                                BorderBrush="{DynamicResource Border}"
+                                BorderThickness="1"
+                                CornerRadius="999"
+                                Padding="10,2"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="StatusBarMicDot"
+                                         Width="7" Height="7"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,6,0"
+                                         Fill="{DynamicResource TextMuted}" />
+                                <TextBlock x:Name="StatusBarMicText"
+                                           Text="Mic: Idle"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Model chip — static "Whisper" pill with
+                             a purple tint so it reads as a capability badge. -->
+                        <Border Background="{DynamicResource AccentSoft}"
+                                BorderBrush="{DynamicResource AccentMid}"
+                                BorderThickness="1"
+                                CornerRadius="999"
+                                Padding="10,2"
+                                Margin="0,0,6,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="Whisper"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Accent}"
+                                       VerticalAlignment="Center" />
+                        </Border>
+
+                        <!-- Version chip — neutral, ends the cluster. -->
+                        <Border Background="{DynamicResource BgHover}"
+                                BorderBrush="{DynamicResource Border}"
+                                BorderThickness="1"
+                                CornerRadius="999"
+                                Padding="10,2"
+                                VerticalAlignment="Center">
+                            <TextBlock x:Name="StatusBarVersion"
+                                       Text="v1.0"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       VerticalAlignment="Center" />
+                        </Border>
                     </StackPanel>
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Border>
 </Window>

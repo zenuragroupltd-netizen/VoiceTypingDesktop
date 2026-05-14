@@ -43,6 +43,53 @@ dotnet publish "$root\VoiceTypingDesktop.csproj" `
 
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed (exit $LASTEXITCODE)" }
 
+# --------------------------------------------------------------
+# Safety net: scan the publish folder for anything that looks like
+# a leaked secret (OpenAI keys, AWS keys, private keys, etc.) and
+# ABORT the build if found. The Supabase anon key is designed to be
+# public so we explicitly allow it.
+# --------------------------------------------------------------
+Write-Host "`n[Safety] Scanning publish output for leaked secrets..."
+
+# Patterns intentionally do not include the Supabase ANON key prefix
+# (`eyJ...` is a JWT, normal for the anon key in any client app).
+$secretPatterns = @(
+    @{ Name = "OpenAI key (sk-proj-)";  Re = 'sk-proj-[A-Za-z0-9_\-]{20,}' }
+    @{ Name = "OpenAI key (sk-)";       Re = 'sk-[A-Za-z0-9]{20,}' }
+    @{ Name = "Anthropic key";          Re = 'sk-ant-[A-Za-z0-9_\-]{20,}' }
+    @{ Name = "AWS access key";         Re = 'AKIA[0-9A-Z]{16}' }
+    @{ Name = "Google API key";         Re = 'AIza[0-9A-Za-z_\-]{35}' }
+    @{ Name = "GitHub PAT";             Re = 'ghp_[A-Za-z0-9]{36,}' }
+    @{ Name = "Private key block";      Re = '-----BEGIN [A-Z ]*PRIVATE KEY-----' }
+)
+
+# Only inspect text-shaped files. We deliberately skip .dll/.exe/.pdb to
+# avoid noise from random byte sequences inside binaries.
+$textFiles = Get-ChildItem $publishDir -Recurse -File `
+             -Include *.json,*.xml,*.config,*.txt,*.md,*.ini,*.yml,*.yaml,*.runtimeconfig.json,*.deps.json `
+             -ErrorAction SilentlyContinue
+
+$leaks = New-Object System.Collections.Generic.List[object]
+foreach ($file in $textFiles) {
+    $content = Get-Content -LiteralPath $file.FullName -Raw -ErrorAction SilentlyContinue
+    if (-not $content) { continue }
+    foreach ($p in $secretPatterns) {
+        if ([regex]::IsMatch($content, $p.Re)) {
+            $leaks.Add([pscustomobject]@{ File = $file.FullName; Kind = $p.Name })
+        }
+    }
+}
+
+if ($leaks.Count -gt 0) {
+    Write-Host ""
+    Write-Host "BUILD ABORTED: suspected secret(s) found in publish output:" -ForegroundColor Red
+    $leaks | ForEach-Object { Write-Host "  - $($_.Kind) in $($_.File)" -ForegroundColor Red }
+    Write-Host ""
+    Write-Host "Remove the secret(s) and re-run. The installer was NOT built." -ForegroundColor Red
+    throw "Secret scan failed. See list above."
+}
+Write-Host "OK - no obvious secrets detected."
+
 Write-Host "`n[3/3] Building installer..."
 
 # Locate ISCC.exe (Inno Setup compiler).

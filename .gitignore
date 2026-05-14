@@ -13,6 +13,25 @@ Installer/Output/
 history.json
 translation-history.json
 
+# Secrets — contains Supabase URL + anon key.
+# The file ships INSIDE the built exe (CopyToOutputDirectory) so end-users
+# are unaffected, but we don't want it visible on public GitHub.
+appsettings.json
+
+# Ad-hoc local backups of secret/config files. Any file prefixed with two
+# underscores, or ending in .backup / .bak / .secret / .local, is treated
+# as "developer-only" and never tracked. Previously we leaked an OpenAI
+# API key via Installer/__appsettings.backup.json — never again.
+__*
+*.backup
+*.backup.*
+*.bak
+*.secret
+*.local
+*.local.*
+.env
+.env.*
+
 # IDE junk
 *.DotSettings.user
 .idea/
